@@ -165,6 +165,7 @@ SERVICE_UUID = "0000ffe0-0000-1000-8000-00805f9b34fb"
 CHARACTERISTIC_UUID = "0000ffe1-0000-1000-8000-00805f9b34fb"
 
 
+
 sio = socketio.AsyncClient()
 
 # global pointNumber
