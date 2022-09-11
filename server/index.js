@@ -81,7 +81,7 @@ io.on("connection", (socket) => {
     if (
       !fs.existsSync(`../data/${dateDirName}/${pointNumber}[${address}].json`)
     ) {
-      exec(`touch ../data/${dateDirName}/${pointNumber}[${address}].json`);
+      execSync(`touch ..\\data/${dateDirName}/${pointNumber}[${address}].json`);
       fs.writeFileSync(
         `../data/${dateDirName}/${pointNumber}[${address}].json`,
         JSON.stringify({
