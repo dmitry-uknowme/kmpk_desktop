@@ -183,7 +183,7 @@
 //   ],
 // };
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-explicsettingsit-any */
 import fs from "fs";
 import electron, { contextBridge, app, BrowserWindow } from "electron";
 import { electronAPI } from "@electron-toolkit/preload";
@@ -201,7 +201,10 @@ const api = {
   },
   getSettings: (): string => {
     const settings = JSON.parse(
-      fs.readFileSync(`${APP_DIR}/settings.json`, "utf8")
+      fs.readFileSync(
+        `/home/dmitry/projects/kmpk_desktop/settings.json`,
+        "utf8"
+      )
     );
     return settings;
   },
@@ -209,7 +212,10 @@ const api = {
   changeSettingsByKey: (key: string, value: string): void => {
     const APP_DIR = getAppDir();
     const settings = JSON.parse(
-      fs.readFileSync(`${APP_DIR}/settings.json`, "utf8")
+      fs.readFileSync(
+        `/home/dmitry/projects/kmpk_desktop/settings.json`,
+        "utf8"
+      )
     );
     // console.log('beforeeee', settings)
     settings[key] = value;

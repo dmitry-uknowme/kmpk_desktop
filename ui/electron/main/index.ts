@@ -40,7 +40,7 @@ async function createWindow() {
     // height: 800,
     // maxWidth: 1280,
     // maxHeight: 800,
-    resizable: false,
+    // resizable: false,
     titleBarStyle: "hidden",
     webPreferences: {
       preload,

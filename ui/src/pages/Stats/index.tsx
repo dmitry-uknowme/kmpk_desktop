@@ -40,7 +40,7 @@ const Stats = () => {
         <div className="row">
           <div className="col-md-6 mt-4">
             <ul>
-              {scannedDataDates.map((date) => (
+              {scannedDataDates?.map((date) => (
                 <li onClick={(e) => fetchScanData(date)}>
                   {date} <i className="bi bi-chevron-down"></i>
                 </li>
@@ -137,7 +137,7 @@ const Stats = () => {
           <div className="col-md-5 offset-md-1 d-flex justify-content-end">
             {scannedData.length ? (
               <Graph
-                graphData={scannedData.map((d) => ({
+                graphData={scannedData?.map((d) => ({
                   primary: d.info.pointNumber,
                   secondary: d.data
                     .reduce(function (avg, value) {
