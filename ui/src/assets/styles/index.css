@@ -1,0 +1,94 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
+
+body {
+  margin: 0;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  font-family: 'Montserrat';
+  /* font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif; */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+.app {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  /* padding: 1.2rem; */
+  background: url('../../../public/background.png');
+}
+
+.form-check-input:checked{
+  background-color: #12DF5B;
+  border-color: #12DF5B;
+}
+
+.logo {
+  background-image: linear-gradient(to right,#2CE9DC, #01A0E3);
+  color: #fff;
+  font-weight: 600;
+}
+
+.header__logo {
+  font-size: 2rem;
+  text-align: center;
+  border-radius: 0.2em;
+}
+
+.header__profile-name {
+  font-size: 1.2rem;
+  font-weight: 500;
+  margin-left: 0.8rem;
+}
+
+.header__settings-text {
+  font-size: 1.375rem;
+  font-weight: 500;
+  margin-left: 0.8rem;
+}
+
+.footer {
+  display: flex;
+}
+
+.footer__btn {
+  color: #fff;
+  font-weight: 500;
+  font-size: 1.6rem;
+  background: #00AAD4;
+  display: flex;
+  align-items: center;
+  padding: 1rem 2rem;
+}
+
+.btn-primary {background: #00AAD4;}
+
+.signin__logo{
+  font-size: 1.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 0.2em;
+  margin-bottom: 1.5rem;
+}
+
+
+table {
+  border-radius: 1em
+}
+
+table td,th{
+  font-size: 0.8rem;
+  /* font-size: 0.625rem; */
+}
+
+
+.dashboard_page,.stats_page {
+  padding: 1.2rem;
+}
