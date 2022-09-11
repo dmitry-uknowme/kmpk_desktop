@@ -5,7 +5,7 @@ const http = require("http");
 const server = http.createServer(app);
 const { Server } = require("socket.io");
 const fs = require("fs");
-const { exec } = require("child_process");
+const { exec, execSync } = require("child_process");
 const io = new Server(server, {
   cors: { origin: "*", methods: ["GET", "POST"] },
 });
