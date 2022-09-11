@@ -5,6 +5,7 @@ const http = require("http");
 const server = http.createServer(app);
 const { Server } = require("socket.io");
 const fs = require("fs");
+const fsPromises = require("fs").promises;
 const { exec, execSync } = require("child_process");
 const io = new Server(server, {
   cors: { origin: "*", methods: ["GET", "POST"] },
@@ -61,7 +62,7 @@ io.on("connection", (socket) => {
     socket.broadcast.emit("UI:DEVICE_DISCONNECTED", data);
   });
 
-  socket.on("WORKER:DEVICE_DATA_RECIEVE", (data) => {
+  socket.on("WORKER:DEVICE_DATA_RECIEVE", async (data) => {
     const pointNumber = devices.find(
       (d) => d.address === data.address
     ).point_number;
@@ -78,13 +79,12 @@ io.on("connection", (socket) => {
       fs.mkdirSync(`../data/${dateDirName}`, { recursive: true });
     }
 
-    if (
-      !fs.existsSync(`../data/${dateDirName}/${pointNumber}[${address}].json`)
-    ) {
-      execSync(
-        `touch ..\\data\\${dateDirName}\\${pointNumber}[${address}].json`
-      );
-      fs.writeFileSync(
+    const file = await fsPromises.readFile(
+      `../data/${dateDirName}/${pointNumber}[${address}].json`
+    );
+
+    if (!file) {
+      await fsPromises.writeFile(
         `../data/${dateDirName}/${pointNumber}[${address}].json`,
         JSON.stringify({
           info: {
@@ -99,8 +99,31 @@ io.on("connection", (socket) => {
       );
     }
 
+    // if (
+    //   !fs.existsSync(`../data/${dateDirName}/${pointNumber}[${address}].json`)
+    // ) {
+    //   // execSync(
+    //   //   `touch ..\\data\\${dateDirName}\\${pointNumber}[${address}].json`
+    //   // );
+    //   fs.writeFileSync(
+    //     `../data/${dateDirName}/${pointNumber}[${address}].json`,
+    //     JSON.stringify({
+    //       info: {
+    //         address,
+    //         type,
+    //         pointNumber,
+    //         start_time: new Date().toLocaleTimeString(),
+    //         end_time: null,
+    //       },
+    //       data: [],
+    //     })
+    //   );
+    // }
+
     const oldData = JSON.parse(
-      fs.readFileSync(`../data/${dateDirName}/${pointNumber}[${address}].json`)
+      await fsPromises.readFile(
+        `../data/${dateDirName}/${pointNumber}[${address}].json`
+      )
     );
 
     oldData.data = [
@@ -109,7 +132,7 @@ io.on("connection", (socket) => {
     ];
     const newData = oldData;
 
-    fs.writeFileSync(
+    await fsPromises.writeFile(
       `../data/${dateDirName}/${pointNumber}[${address}].json`,
       JSON.stringify(newData, null, 2)
     );
