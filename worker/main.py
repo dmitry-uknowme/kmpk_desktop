@@ -193,7 +193,7 @@ class BtWorker():
             try:
                 await queue.put((time.time(), data, address))
             except Exception as e:
-                print('disconn', e)
+                print('disconn', e,address)
                 await sio.emit('WORKER:DEVICE_DISCONNECTED', {"address": address})
                 self.pointNumber = self.pointNumber + 1
         try:
@@ -206,7 +206,10 @@ class BtWorker():
                     await client.start_notify(char_uuid, callback_handler)
                     await asyncio.sleep(15)
         except Exception as e:
-            print('disconn2', e)
+            print('disconn2', e,address)
+            await self.deviceDisconnect(address)
+            asyncio.sleep(10)
+            await self.deviceConnect(address)
             await sio.emit('WORKER:DEVICE_DISCONNECTED', {"address": address})
             self.pointNumber = self.pointNumber + 1
 
