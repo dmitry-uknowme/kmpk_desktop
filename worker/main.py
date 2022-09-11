@@ -238,8 +238,10 @@ class BtWorker():
                 tmp = dict(s.split("=") for s in tempData.split(","))
                 obj = dict()
 
-                obj['temp'] = tmp["T"] if 'T' in tmp else ""
-
+                if 'T' in tmp:
+                    obj['temp'] = tmp["T"]
+                else:
+                    obj['temp'] = ""
                 # obj['temp'] = tmp["T"] ? tmp['T']:""
                 obj['h2'] = tmp["H2"].replace("ppm", "")
                 # obj['maxH2']= float(tmp["H2"].replace("ppm", ""))
