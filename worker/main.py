@@ -253,10 +253,12 @@ class BtWorker():
                     #     obj['maxH2'] = obj['h2']
                         
                     await sio.emit('WORKER:DEVICE_DATA_RECIEVE', {"address": address, "data": obj, "pointNumber": self.pointNumber})
-                    tempData = ""
+                    
                 except Exception as e:
                     print('unable to parse',e)
+                    tempData = ""
                     continue
+                tempData = ""
     # async def main(address: str, char_uuid: str):
     #     tasks = []
     #     for address in ADDRESSES:
