@@ -11,6 +11,8 @@ const io = new Server(server, {
   cors: { origin: "*", methods: ["GET", "POST"] },
 });
 
+const convertAddress = (address) => address.replaceAll(":", "_");
+
 app.use(cors({ origin: "*", methods: ["GET", "POST"] }));
 
 let pointNumber = 0;
@@ -80,12 +82,14 @@ io.on("connection", (socket) => {
     }
 
     const file = await fsPromises.readFile(
-      `../data/${dateDirName}/${pointNumber}[${address}].json`
+      `../data/${dateDirName}/${pointNumber}[${convertAddress(address)}].json`
     );
 
     if (!file) {
       await fsPromises.writeFile(
-        `../data/${dateDirName}/${pointNumber}[${address}].json`,
+        `../data/${dateDirName}/${pointNumber}[${convertAddress(
+          address
+        )}].json`,
         JSON.stringify({
           info: {
             address,
@@ -122,7 +126,7 @@ io.on("connection", (socket) => {
 
     const oldData = JSON.parse(
       await fsPromises.readFile(
-        `../data/${dateDirName}/${pointNumber}[${address}].json`
+        `../data/${dateDirName}/${pointNumber}[${convertAddress(address)}].json`
       )
     );
 
@@ -133,7 +137,7 @@ io.on("connection", (socket) => {
     const newData = oldData;
 
     await fsPromises.writeFile(
-      `../data/${dateDirName}/${pointNumber}[${address}].json`,
+      `../data/${dateDirName}/${pointNumber}[${convertAddress(address)}].json`,
       JSON.stringify(newData, null, 2)
     );
 
@@ -157,7 +161,11 @@ app.get("/getScannedData", (req, res) => {
     files
       ?.filter((f) => f !== "info.json")
       ?.map((file) =>
-        data.push(JSON.parse(fs.readFileSync(`../data/${date}/${file}`)))
+        data.push(
+          JSON.parse(
+            fs.readFileSync(`../data/${date}/${file.replaceAll(":", "_")}`)
+          )
+        )
       );
     res.json({ data });
   });
