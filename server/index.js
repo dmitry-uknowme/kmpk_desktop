@@ -15,7 +15,7 @@ let pointNumber = 0;
 
 const APP_DIR = "C:\\app\\kmpk_desktop";
 
-const devices = JSON.parse(
+let devices = JSON.parse(
   fs.readFileSync(`${APP_DIR}\\settings.json`, "utf8")
 ).devices;
 
