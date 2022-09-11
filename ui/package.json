@@ -9,7 +9,8 @@
   "main": "dist/electron/main/index.js",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build && electron-builder"
+    "build": "tsc && vite build && electron-builder",
+    "prod": "vite preview"
   },
   "engines": {
     "node": "^14.18.0 || >=16.0.0"
@@ -22,14 +23,17 @@
     "react-bootstrap": "^2.5.0",
     "react-charts": "^3.0.0-beta.48",
     "react-router-dom": "^6.3.0",
+    "react-toastify": "^9.0.8",
     "socket.io-client": "^4.5.2"
   },
   "devDependencies": {
+    "@electron-toolkit/preload": "^1.0.2",
     "@types/react": "^18.0.17",
     "@types/react-dom": "^18.0.6",
     "@vitejs/plugin-react": "^2.0.1",
     "electron": "^20.0.2",
     "electron-builder": "^23.3.3",
+    "electron-localshortcut": "^3.2.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "sass": "^1.54.4",

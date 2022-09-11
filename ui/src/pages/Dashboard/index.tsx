@@ -1,15 +1,73 @@
 import DeviceCard from "@/components/DeviceCard";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { Offcanvas } from "react-bootstrap";
 import { Link, useSearchParams } from "react-router-dom";
 import io from "socket.io-client";
 
-const socket = io("http://localhost:8081");
+const settings = window.api.getSettings();
+console.log("sss", settings);
 
 const DashboardPage = () => {
   const [search, setSearch] = useSearchParams();
   const [fullName, setFullName] = useState(search.get("full_name"));
+  const [isShowMenu, setIsShowMenu] = useState<boolean>(false);
+
   return (
     <div className="dashboard_page">
+      <Offcanvas
+        show={isShowMenu}
+        onHide={() => setIsShowMenu(false)}
+        placement={"end"}
+      >
+        <Offcanvas.Header closeButton>
+          <Offcanvas.Title>Настройки</Offcanvas.Title>
+        </Offcanvas.Header>
+        <Offcanvas.Body>
+          <form>
+            {settings?.devices?.map((device) => (
+              <div className="mb-3">
+                <label htmlFor="exampleInputEmail1" className="form-label">
+                  Устройство №{device.number}
+                </label>
+                <input
+                  type="email"
+                  className="form-control"
+                  id="exampleInputEmail1"
+                  aria-describedby="emailHelp"
+                  value={device.address}
+                />
+              </div>
+            ))}
+
+            <div class="mb-3">
+              <label for="exampleInputEmail1" class="form-label">
+                Путь для сохранения данных замеров
+              </label>
+              <input
+                type="email"
+                class="form-control"
+                id="exampleInputEmail1"
+                aria-describedby="emailHelp"
+                value={settings.saveFolder}
+              />
+            </div>
+            <div class="form-check form-switch">
+              <input
+                class="form-check-input"
+                type="checkbox"
+                id="flexSwitchCheckChecked"
+              />
+              <label class="form-check-label" for="flexSwitchCheckChecked">
+                Автоматически определить устройства
+              </label>
+            </div>
+            <div className="btn btn-success mt-4">Сохранить</div>
+            <div className="row" style={{ marginTop: "5rem" }}>
+              <div className="btn btn-primary">Обновить приложение</div>
+            </div>
+          </form>
+        </Offcanvas.Body>
+      </Offcanvas>
       <div className="container-fluid">
         <div className="header w-100">
           <div className="row w-100 align-items-center">
@@ -42,13 +100,21 @@ const DashboardPage = () => {
               </div>
             </div>
             <div className="col-md-4 offset-md-2 d-flex justify-content-end">
-              <div className="header__settings d-flex">
+              <div
+                className="header__settings d-flex"
+                onClick={() => setIsShowMenu(true)}
+              >
                 <img
                   className="header__settings-icon"
                   src="settings_icon.png"
                 />
               </div>
-              <div className="header__settings-text">Настройки</div>
+              <div
+                className="header__settings-text"
+                onClick={() => setIsShowMenu(true)}
+              >
+                Настройки
+              </div>
             </div>
           </div>
         </div>

@@ -1,6 +1,8 @@
 import { app, BrowserWindow, shell, ipcMain } from "electron";
 import { release } from "os";
 import { join } from "path";
+import nodeChildProcess from "child_process";
+import electronLocalshortcut from "electron-localshortcut";
 
 // Disable GPU Acceleration for Windows 7
 if (release().startsWith("6.1")) app.disableHardwareAcceleration();
@@ -23,6 +25,7 @@ export const ROOT_PATH = {
 };
 
 let win: BrowserWindow | null = null;
+
 // Here, you can also use other preload
 const preload = join(__dirname, "../preload/index.js");
 const url = process.env.VITE_DEV_SERVER_URL;
@@ -30,19 +33,45 @@ const indexHtml = join(ROOT_PATH.dist, "index.html");
 
 async function createWindow() {
   win = new BrowserWindow({
+    autoHideMenuBar: true,
     title: "Main window",
     icon: join(ROOT_PATH.public, "favicon.svg"),
-    width: 1280,
-    height: 800,
+    // width: 1280,
+    // height: 800,
     // maxWidth: 1280,
     // maxHeight: 800,
-    // resizable: false,
+    resizable: false,
+    titleBarStyle: "hidden",
     webPreferences: {
       preload,
       nodeIntegration: true,
       contextIsolation: false,
     },
   });
+
+  electronLocalshortcut.register(win, "F2", () => {
+    let script = nodeChildProcess.spawn("cmd.exe", [
+      "/c",
+      "cd ../../../ && Update.bat",
+    ]);
+
+    console.log("PID: " + script.pid);
+
+    script.stdout.on("data", (data) => {
+      console.log("stdout: " + data);
+    });
+
+    script.stderr.on("data", (err) => {
+      console.log("stderr: " + err);
+    });
+
+    script.on("exit", (code) => {
+      console.log("Exit Code: " + code);
+    });
+  });
+
+  win.setMenuBarVisibility(false);
+  win.maximize();
 
   if (app.isPackaged) {
     win.loadFile(indexHtml);
@@ -90,6 +119,9 @@ app.on("activate", () => {
 // new window example arg: new windows url
 ipcMain.handle("open-win", (event, arg) => {
   const childWindow = new BrowserWindow({
+    autoHideMenuBar: true,
+    resizable: false,
+    titleBarStyle: "hidden",
     webPreferences: {
       preload,
     },

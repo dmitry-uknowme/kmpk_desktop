@@ -199,6 +199,9 @@ class BtWorker():
         try:
             async with BleakClient(address, timeout=10.0) as client:
                 logger.info(f"Connected: {client.is_connected}")
+
+                if client.is_connected:
+                    await client.disconnect()
                 # self.detectedDevices.append({"address":address, "number":})
                 await sio.emit('WORKER:DEVICE_CONNECTED', {"address": address, "pointNumber": self.pointNumber})
                 self.pointNumber = self.pointNumber + 1
@@ -274,6 +277,7 @@ class BtWorker():
         logger.info("Main method done.")
 
     async def deviceDisconnect(self,address:str):
+        print('on disconnect',address)
         async with BleakClient(address, timeout=10.0) as client:
             if (client.is_connected):
                 client.disconnect()
