@@ -5,7 +5,6 @@ import { Link, useSearchParams } from "react-router-dom";
 import io from "socket.io-client";
 
 const settings = window.api.getSettings();
-console.log("sss", settings);
 
 const DashboardPage = () => {
   const [search, setSearch] = useSearchParams();
@@ -120,42 +119,16 @@ const DashboardPage = () => {
         </div>
         <main className="main devices_list mt-5">
           <div className="row">
-            <div className="col-md-3">
-              <DeviceCard address="20:C3:8F:BE:B3:1B" type="Hydro" number={1} />
-            </div>
-            {/* <div className="col-md-3">
-              <DeviceCard address="00:15:87:00:B7:E2" type="Hydro" number={1} />
-            </div> */}
-            {/* <div className="col-md-3">
-              <DeviceCard address="88:25:83:F0:97:90" type="Hydro" number={2} />
-            </div> */}
-            {/* <div className="col-md-3">
-              <DeviceCard address="98:7B:F3:5F:66:D6" type="Hydro" number={2} />
-            </div> */}
-            <div className="col-md-3">
-              <DeviceCard address="50:65:83:79:24:9F" type="Hydro" number={2} />
-            </div>
-            {/* <div className="col-md-3">
-              <DeviceCard
-                address="88:4A:EA:92:1D:43"
-                type="Ground"
-                number={3}
-              />
-            </div> */}
-            <div className="col-md-3">
-              <DeviceCard
-                address="00:15:85:14:9C:09"
-                type="Ground"
-                number={3}
-              />
-            </div>
-            {/* <div className="col-md-3">
-              <DeviceCard
-                address="50:65:83:75:E3:2B"
-                type="Ground"
-                number={3}
-              />
-            </div> */}
+            {settings.devices.map((device) => (
+              <div className="col-md-3">
+                <DeviceCard
+                  address={device.address}
+                  type={device.type}
+                  number={device.number}
+                />
+              </div>
+            ))}
+
             <div className="col-md-3 h-100">
               <div
                 className="card h-100"
