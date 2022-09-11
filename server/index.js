@@ -81,11 +81,11 @@ io.on("connection", (socket) => {
       fs.mkdirSync(`../data/${dateDirName}`, { recursive: true });
     }
 
-    const file = await fsPromises.readFile(
-      `../data/${dateDirName}/${pointNumber}[${convertAddress(address)}].json`
-    );
-
-    if (!file) {
+    if (
+      !fs.existsSync(
+        `../data/${dateDirName}/${pointNumber}[${convertAddress(address)}].json`
+      )
+    ) {
       await fsPromises.writeFile(
         `../data/${dateDirName}/${pointNumber}[${convertAddress(
           address
@@ -102,7 +102,6 @@ io.on("connection", (socket) => {
         })
       );
     }
-
     // if (
     //   !fs.existsSync(`../data/${dateDirName}/${pointNumber}[${address}].json`)
     // ) {
