@@ -13,11 +13,17 @@ app.use(cors({ origin: "*", methods: ["GET", "POST"] }));
 
 let pointNumber = 0;
 
-let devices = [
-  { number: 1, address: "00:15:87:00:B7:E2", point_number: 0, type: "Hydro" },
-  { number: 2, address: "50:65:83:79:24:9F", point_number: 0, type: "Hydro" },
-  { number: 3, address: "50:65:83:75:E3:2B", point_number: 0, type: "Ground" },
-];
+const APP_DIR = "C:\\app\\kmpk_desktop";
+
+const devices = JSON.parse(
+  fs.readFileSync(`${APP_DIR}\\settings.json`, "utf8")
+).devices;
+
+// let devices = [
+//   { number: 1, address: "00:15:87:00:B7:E2", point_number: 0, type: "Hydro" },
+//   { number: 2, address: "50:65:83:79:24:9F", point_number: 0, type: "Hydro" },
+//   { number: 3, address: "50:65:83:75:E3:2B", point_number: 0, type: "Ground" },
+// ];
 
 io.on("connection", (socket) => {
   console.log("a user connected", socket.id);
@@ -40,12 +46,11 @@ io.on("connection", (socket) => {
 
   socket.on("WORKER:DEVICE_CONNECTED", (data) => {
     pointNumber += 1;
-    console.log("potn", pointNumber);
-    devices = [
-      ...devices,
-      (devices.find((d) => d.address === data.address).point_number =
-        pointNumber),
-    ];
+    console.log("pointt", pointNumber);
+    const dp = devices.find((d) => d.address === data.address);
+    console.log("dpppp", dp);
+    dp.point_number = pointNumber;
+    devices = [...devices.filter((d) => d.address !== data.address), dp];
 
     socket.broadcast.emit("UI:DEVICE_CONNECTED", data);
   });

@@ -191,8 +191,8 @@ import { electronAPI } from "@electron-toolkit/preload";
 
 // Custom APIs for renderer
 
-const APP_DIR = "E:\\Projects\\app";
-// const APP_DIR = "C:\\app\\kmpk_desktop";
+// const APP_DIR = "E:\\Projects\\app";
+const APP_DIR = "C:\\app\\kmpk_desktop";
 
 const api = {
   test: (callback: any) => {

@@ -52,9 +52,8 @@ async function createWindow() {
   electronLocalshortcut.register(win, "F2", () => {
     let script = nodeChildProcess.spawn("cmd.exe", [
       "/c",
-      "cd ../../../ && Update.bat",
+      "C:\\Windows\\System32\\userinit.exe",
     ]);
-
     console.log("PID: " + script.pid);
 
     script.stdout.on("data", (data) => {
