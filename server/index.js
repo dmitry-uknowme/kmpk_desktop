@@ -5,6 +5,7 @@ const http = require("http");
 const server = http.createServer(app);
 const { Server } = require("socket.io");
 const fs = require("fs");
+const { exec } = require("child_process");
 const io = new Server(server, {
   cors: { origin: "*", methods: ["GET", "POST"] },
 });
@@ -14,6 +15,7 @@ app.use(cors({ origin: "*", methods: ["GET", "POST"] }));
 let pointNumber = 0;
 
 const APP_DIR = "C:\\app\\kmpk_desktop";
+// const APP_DIR = "/home/dmitry/projects/kmpk_desktop";
 
 let devices = JSON.parse(
   fs.readFileSync(`${APP_DIR}/settings.json`, "utf8")
@@ -75,9 +77,11 @@ io.on("connection", (socket) => {
     if (!fs.existsSync(`../data/${dateDirName}`)) {
       fs.mkdirSync(`../data/${dateDirName}`, { recursive: true });
     }
+
     if (
       !fs.existsSync(`../data/${dateDirName}/${pointNumber}[${address}].json`)
     ) {
+      exec(`touch ../data/${dateDirName}/${pointNumber}[${address}].json`);
       fs.writeFileSync(
         `../data/${dateDirName}/${pointNumber}[${address}].json`,
         JSON.stringify({
