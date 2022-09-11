@@ -223,40 +223,40 @@ class BtWorker():
             else:
                 # logger.info(
                 #     f"Received callback data via async queue at {epoch}: {data}")
-                if (data == prevData):
-                    continue
-                prevData = data
-                tempData += data.decode("ascii")
-                if '\r' not in tempData:
-                    continue
-                # tempData = tempData.replace(',Ti=', '')
-                print('ttttt', tempData, 'addd', address)
+                try:
+                    if (data == prevData):
+                        continue
+                    prevData = data
+                    tempData += data.decode("ascii")
+                    if '\r' not in tempData:
+                        continue
+                    # tempData = tempData.replace(',Ti=', '')
+                    print('ttttt', tempData, 'addd', address)
 
-                # for s in tempData.split(","):
-                #     print('ssssss', s)
-                #     print('sssss23', s.split('='))
-                tmp = dict(s.split("=") for s in tempData.split(","))
-                obj = dict()
+                    tmp = dict(s.split("=") for s in tempData.split(","))
+                    obj = dict()
 
-                if 'T' in tmp:
-                    obj['temp'] = tmp["T"]
-                else:
-                    obj['temp'] = ""
-                # obj['temp'] = tmp["T"] ? tmp['T']:""
-                obj['h2'] = tmp["H2"].replace("ppm", "")
-                # obj['maxH2']= float(tmp["H2"].replace("ppm", ""))
-                
-                if (tmp["PH"].split(" ")[0]):
-                    tmp["PH"].split(" ")[0]
-                obj['moi'] = tmp["Moi"].split(" ")[0]
-                obj['Lat'] = tmp["La"]
-                obj['Long'] = tmp["Lo"]
-                # if (obj['h2'] > obj['maxH2'] or not obj['maxH2']):
-                #     obj['maxH2'] = obj['h2']
+                    if 'T' in tmp:
+                        obj['temp'] = tmp["T"]
+                    else:
+                        obj['temp'] = ""
+                    # obj['temp'] = tmp["T"] ? tmp['T']:""
+                    obj['h2'] = tmp["H2"].replace("ppm", "")
+                    # obj['maxH2']= float(tmp["H2"].replace("ppm", ""))
                     
-                await sio.emit('WORKER:DEVICE_DATA_RECIEVE', {"address": address, "data": obj, "pointNumber": self.pointNumber})
-                tempData = ""
-
+                    if (tmp["PH"].split(" ")[0]):
+                        tmp["PH"].split(" ")[0]
+                    obj['moi'] = tmp["Moi"].split(" ")[0]
+                    obj['Lat'] = tmp["La"]
+                    obj['Long'] = tmp["Lo"]
+                    # if (obj['h2'] > obj['maxH2'] or not obj['maxH2']):
+                    #     obj['maxH2'] = obj['h2']
+                        
+                    await sio.emit('WORKER:DEVICE_DATA_RECIEVE', {"address": address, "data": obj, "pointNumber": self.pointNumber})
+                    tempData = ""
+                except Exception as e:
+                    print('unable to parse',e)
+                    continue
     # async def main(address: str, char_uuid: str):
     #     tasks = []
     #     for address in ADDRESSES:
