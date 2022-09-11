@@ -40,6 +40,16 @@ const DeviceCard: React.FC<IDevice> = ({
   const [workingTime, setWorkingTime] = useState(0);
   const [isConnected, setIsConnected] = useState(false);
   const timerRef = useRef();
+  const [awaitTime, setAwaitTime] = useState(0);
+  const awaitTimer = useRef();
+
+  useEffect(() => {
+    clearInterval(awaitTimer, awaitTimer.current);
+
+    awaitTimer.current = setInterval(() => {
+      setAwaitTime((state) => (state += 1));
+    }, 1000);
+  }, []);
 
   const tryConnectDevice = () => {
     socket.emit("UI:DEVICE_TRY_CONNECT", { address });
@@ -50,11 +60,16 @@ const DeviceCard: React.FC<IDevice> = ({
     socket.emit("UI:DEVICE_TRY_DISCONNECT", { address });
   };
 
-  // console.log("isconn", isConnected);
   useEffect(() => {
     socket.on("UI:DEVICE_DATA_RECIEVE", (data) => {
       if (data.address === address) {
         if (!isConnected) setIsConnected(true);
+        setAwaitTime(0);
+        clearInterval(awaitTimer, awaitTimer.current);
+        awaitTimer.current = setInterval(() => {
+          setAwaitTime((state) => (state += 1));
+        }, 1000);
+
         setData((state) => ({ ...state, ...data.data }));
       }
       console.log("dataaaaa", data);
@@ -76,6 +91,10 @@ const DeviceCard: React.FC<IDevice> = ({
     timerRef.current = setInterval(() => {
       setWorkingTime((state) => (state += 1));
     }, 1000);
+    if (awaitTime > 30000) {
+      console.log("больше 30 сек нет данных");
+      tryConnectDevice();
+    }
     return () => clearInterval(timerRef.current);
   }, []);
 

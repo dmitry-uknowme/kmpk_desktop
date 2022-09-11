@@ -1,5 +1,5 @@
 import DeviceCard from "@/components/DeviceCard";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Offcanvas } from "react-bootstrap";
 import { Link, useSearchParams } from "react-router-dom";
 import io from "socket.io-client";

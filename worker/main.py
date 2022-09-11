@@ -198,6 +198,8 @@ class BtWorker():
                 self.pointNumber = self.pointNumber + 1
         try:
             async with BleakClient(address, timeout=10.0) as client:
+                if (client.is_connected):
+                    client.disconnect()
                 logger.info(f"Connected: {client.is_connected}")
                 # self.detectedDevices.append({"address":address, "number":})
                 await sio.emit('WORKER:DEVICE_CONNECTED', {"address": address, "pointNumber": self.pointNumber})
@@ -208,7 +210,7 @@ class BtWorker():
         except Exception as e:
             print('disconn2', e,address)
             await self.deviceDisconnect(address)
-            asyncio.sleep(10)
+            await asyncio.sleep(10)
             await self.deviceConnect(address)
             await sio.emit('WORKER:DEVICE_DISCONNECTED', {"address": address})
             self.pointNumber = self.pointNumber + 1
@@ -248,7 +250,7 @@ class BtWorker():
                     # obj['maxH2']= float(tmp["H2"].replace("ppm", ""))
                     
                     if (tmp["PH"].split(" ")[0]):
-                        tmp["PH"].split(" ")[0]
+                        obj['ph'] = tmp["PH"].split(" ")[0]
                     obj['moi'] = tmp["Moi"].split(" ")[0]
                     obj['Lat'] = tmp["La"]
                     obj['Long'] = tmp["Lo"]
