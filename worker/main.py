@@ -239,11 +239,11 @@ class BtWorker():
                 obj = dict()
                 obj['temp'] = tmp["T"]
                 # obj['temp'] = tmp["T"] ? tmp['T']:""
-                obj['h2'] = float(tmp["H2"].replace("ppm", ""))
+                obj['h2'] = tmp["H2"].replace("ppm", "")
                 # obj['maxH2']= float(tmp["H2"].replace("ppm", ""))
                 
                 if (tmp["PH"].split(" ")[0]):
-                    float(tmp["PH"].split(" ")[0])
+                    tmp["PH"].split(" ")[0]
                 obj['moi'] = tmp["Moi"].split(" ")[0]
                 obj['Lat'] = tmp["La"]
                 obj['Long'] = tmp["Lo"]
