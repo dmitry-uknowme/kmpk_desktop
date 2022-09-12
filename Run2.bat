@@ -1,0 +1,1 @@
+start C:\app\kmpk_desktop\RunUi.bat && npx kill-port 8081 && start C:\app\kmpk_desktop\RunServer.bat && start C:\app\kmpk_desktop\RunWorker.bat

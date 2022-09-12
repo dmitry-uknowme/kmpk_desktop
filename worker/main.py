@@ -295,10 +295,14 @@ class BtWorker():
                 
 
     async def startServer(self):
-        pointNumber = 1
-        await sio.connect('http://localhost:8081')
-        await sio.wait()
-
+        try:
+            pointNumber = 1
+            await sio.connect('http://localhost:8081',wait_timeout=10)
+            await sio.wait()
+        except Exception as e:
+            await asyncio.sleep(3)
+            print('try connect')
+            await self.startServer()
 
 if __name__ == '__main__':
     worker = BtWorker()
