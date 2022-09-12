@@ -172,7 +172,7 @@ const DashboardPage = () => {
             })
           }
           style={{
-            // opacity: 0,
+            opacity: 0,
             display: "block",
             position: "absolute",
             bottom: "0",
