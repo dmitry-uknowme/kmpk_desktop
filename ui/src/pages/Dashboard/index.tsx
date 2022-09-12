@@ -10,6 +10,7 @@ const DashboardPage = () => {
   const [fullName, setFullName] = useState(search.get("full_name"));
   const [isShowMenu, setIsShowMenu] = useState<boolean>(false);
   const [mode, setMode] = useState(0);
+  const [pointNumbers1, setPointNumbers1] = useState([1, 1, 1]);
 
   return (
     <div className="dashboard_page">
@@ -126,6 +127,8 @@ const DashboardPage = () => {
                   type={device.type}
                   number={device.number}
                   mode={mode}
+                  pointNumbers1={pointNumbers1}
+                  setPointNumbers1={setPointNumbers1}
                 />
               </div>
             ))}
@@ -162,7 +165,12 @@ const DashboardPage = () => {
           </Link> */}
         </footer>
         <div
-          onClick={setMode((state) => (state === 0 ? 1 : 0))}
+          onClick={() =>
+            setMode((state) => {
+              console.log("chhh mmmm", state);
+              return state === 0 ? 1 : 0;
+            })
+          }
           style={{
             // opacity: 0,
             display: "block",

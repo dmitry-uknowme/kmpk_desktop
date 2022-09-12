@@ -17,8 +17,8 @@ app.use(cors({ origin: "*", methods: ["GET", "POST"] }));
 
 let pointNumber = 0;
 
-const APP_DIR = "C:\\app\\kmpk_desktop";
-// const APP_DIR = "/home/dmitry/projects/kmpk_desktop";
+// const APP_DIR = "C:\\app\\kmpk_desktop";
+const APP_DIR = "/home/dmitry/projects/kmpk_desktop";
 
 let devices = JSON.parse(
   fs.readFileSync(`${APP_DIR}/settings.json`, "utf8")
@@ -65,9 +65,9 @@ io.on("connection", (socket) => {
   });
 
   socket.on("WORKER:DEVICE_DATA_RECIEVE", async (data) => {
-    const pointNumber = devices.find(
-      (d) => d.address === data.address
-    ).point_number;
+    console.log("dddddd", data);
+    const pointNumber =
+      devices.find((d) => d.address === data.address).point_number || 0;
     const address = data.address;
 
     const type = devices.find((device) => device.address === address).type;
@@ -126,7 +126,7 @@ io.on("connection", (socket) => {
         JSON.stringify(newData, null, 2)
       );
 
-      socket.broadcast.emit("UI:DEVICE_DATA_RECIEVE", { ...data, pointNumber });
+      socket.emit("UI:DEVICE_DATA_RECIEVE", { ...data, pointNumber });
     } catch (e) {
       console.log("unable to write file", e);
     }

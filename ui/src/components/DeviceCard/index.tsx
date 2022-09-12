@@ -35,6 +35,8 @@ const DeviceCard: React.FC<IDevice> = ({
   type,
   pointNumber,
   mode,
+  pointNumbers1,
+  setPointNumbers1,
   // workingTime,
 }) => {
   const [data, setData] = useState<IDevice>();
@@ -47,7 +49,6 @@ const DeviceCard: React.FC<IDevice> = ({
 
   function getRandomFloat(min, max, decimals) {
     const str = (Math.random() * (max - min) + min).toFixed(decimals);
-
     return parseFloat(str);
   }
 
@@ -60,14 +61,20 @@ const DeviceCard: React.FC<IDevice> = ({
   }, []);
 
   const tryConnectDevice = () => {
-    socket.emit("UI:DEVICE_TRY_CONNECT", { address });
+    if (mode === 0) {
+      socket.emit("UI:DEVICE_TRY_CONNECT", { address });
+    } else {
+      setIsConnected(true);
+    }
   };
 
   const tryDisconnectDevice = () => {
-    console.log("ddddis");
-    socket.emit("UI:DEVICE_TRY_DISCONNECT", { address });
+    if (mode === 0) {
+      socket.emit("UI:DEVICE_TRY_DISCONNECT", { address });
+    } else {
+      setIsConnected(false);
+    }
   };
-  console.log("dataaaaa", data);
   useEffect(() => {
     socket.on("UI:DEVICE_DATA_RECIEVE", (data) => {
       if (data.address === address) {
@@ -118,24 +125,64 @@ const DeviceCard: React.FC<IDevice> = ({
     return () => clearInterval(timerRef.current);
   }, [isConnected]);
 
+  const pause = (t: number) => {
+    return new Promise((resolve) =>
+      setTimeout(() => {
+        console.log();
+        resolve();
+      }, t)
+    );
+  };
+
   useEffect(() => {
     if (mode === 1) {
-      while (mode === 1) {
+      modeTimerRef.current = setInterval(() => {
         setIsConnected(true);
-        clearInterval(modeTimerRef.current);
-        modeTimerRef.current = setTimeout(() => {
-          setData((state) => ({
-            ...state,
-            ph: getRandomFloat(6.5, 6.8, 2),
-            t: getRandomFloat(22.5, 23, 2),
-            moi: getRandomFloat(0, 4.5, 2),
-          }));
-        }, getRandomFloat(3000, 5000, 2));
-      }
+        // if (isConnected) {
+
+        socket.emit("WORKER:DEVICE_DATA_RECIEVE", {
+          address,
+          data: {
+            temp: getRandomFloat(
+              data?.temp ? data?.temp : 22.5,
+              data?.temp ? data?.temp + 0.1 : 23,
+              1
+            ),
+            ph: getRandomFloat(5.5, 5.8, 2),
+            h2: getRandomFloat(0, 1, 2).toFixed(0),
+            moi: getRandomFloat(0, 1, 2),
+            Lat: "",
+            Long: "",
+            timestamp: 1662888683978,
+          },
+        });
+        // setData((state) => ({
+        //   ...state,
+        //   ph: getRandomFloat(5.5, 5.8, 2),
+        //   h2: getRandomFloat(0, 1, 2).toFixed(0),
+        //   Long: "",
+        //   Lat: "",
+        //   moi: getRandomFloat(0, 1, 2),
+        //   temp: getRandomFloat(
+        //     state?.temp ? state?.temp : 22.5,
+        //     state?.temp ? state?.temp + 0.1 : 23,
+        //     1
+        //   ),
+        // }));
+        // }
+      }, 3000 + getRandomFloat(500, 1000));
+    } else {
+      setIsConnected(false);
     }
-    return clearInterval(modeTimerRef.current);
+    // return clearInterval(modeTimerRef.current);
   }, [mode]);
 
+  useEffect(() => {
+    if (mode === 1 && isConnected === true) {
+      setPointNumbers1((state) => [...state.map((p) => p++)]);
+    }
+  }, [isConnected]);
+  console.log("pppp", pointNumbers1);
   return (
     <div className={`card ${styles.deviceCard}`}>
       <div className="card-header d-flex" style={{ background: "inherit" }}>
@@ -167,7 +214,9 @@ const DeviceCard: React.FC<IDevice> = ({
         <div className={styles.card__field}>
           <div className={styles.card__fieldKey}>Точка №</div>
           <div className={styles.card__fieldValue}>
-            {data?.pointNumber || "-"}
+            {mode === 1 && pointNumbers1[number - 1]
+              ? pointNumbers1[number]
+              : data?.pointNumber || "-"}
           </div>
         </div>
         <hr />
