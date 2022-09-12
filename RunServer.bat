@@ -1,0 +1,1 @@
+cd C:\app\kmpk_desktop\server && node index.js

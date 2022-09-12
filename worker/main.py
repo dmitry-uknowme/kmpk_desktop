@@ -193,7 +193,7 @@ class BtWorker():
             try:
                 await queue.put((time.time(), data, address))
             except Exception as e:
-                print('Устройство '+ address + ' отключено.' 'Ошибка: '+ e)
+                print('Устройство '+ address + ' отключено.' +' Ошибка: '+ str(e))
                 await sio.emit('WORKER:DEVICE_DISCONNECTED', {"address": address})
                 self.pointNumber = self.pointNumber + 1
         try:
@@ -205,12 +205,12 @@ class BtWorker():
                 await sio.emit('WORKER:DEVICE_CONNECTED', {"address": address, "pointNumber": self.pointNumber})
                 self.pointNumber = self.pointNumber + 1
                 while True:
-                    if ( not await client.is_connected()):
+                    if (not client.is_connected):
                         await client.connect()
                     await client.start_notify(char_uuid, callback_handler)
                     await asyncio.sleep(15)
         except Exception as e:
-            print('Устройство '+ address + ' отключено.' 'Ошибка: '+ e)
+            print('Устройство '+ address + ' отключено.' + ' Ошибка: '+ str(e))
             await self.deviceDisconnect(address)
             await asyncio.sleep(10)
             await self.deviceConnect(address)
@@ -287,7 +287,7 @@ class BtWorker():
 
     async def deviceDisconnect(self,address:str):
         async with BleakClient(address, timeout=10.0) as client:
-            if (await client.is_connected):
+            if (client.is_connected):
                 await client.stop_notify(CHARACTERISTIC_UUID)
                 await client.disconnect()
                 logger.info(f"Disconnected: {client.is_connected}")

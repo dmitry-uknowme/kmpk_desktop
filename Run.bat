@@ -1,1 +1,1 @@
-concurrently "cd C:\app\kmpk_desktop\server && node index.js" "cd C:\app\kmpk_desktop\ui && npm run dev" && RunWorker.bat
+concurrently "cd C:\app\kmpk_desktop\server && node index.js" "cd C:\app\kmpk_desktop\ui && npm run dev" "python C:\app\kmpk_desktop\worker\main.py"

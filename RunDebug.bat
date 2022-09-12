@@ -1,0 +1,1 @@
+start RunUi.bat && start RunServer.bat && start RunWorker.bat
