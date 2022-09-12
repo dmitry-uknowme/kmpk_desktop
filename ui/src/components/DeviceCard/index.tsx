@@ -63,6 +63,7 @@ const DeviceCard: React.FC<IDevice> = ({
     if (mode === 0) {
       socket.emit("UI:DEVICE_TRY_CONNECT", { address });
     } else {
+      setManualDisconnect(false);
       socket.emit("UI:DEVICE_DISCONNECTED", { address });
     }
   };
@@ -137,11 +138,9 @@ const DeviceCard: React.FC<IDevice> = ({
     if (mode === 1) {
       modeTimerRef.current = setInterval(() => {
         // if (isConnected) {
-        if (manualDisconnect) {
+        if (!manualDisconnect) {
           setIsConnected(false);
-        } else {
-          setIsConnected(true);
-        }
+
         socket.emit("WORKER:DEVICE_DATA_RECIEVE", {
           address,
           data: {
