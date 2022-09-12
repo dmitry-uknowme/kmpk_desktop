@@ -211,10 +211,10 @@ class BtWorker():
                     await asyncio.sleep(15)
         except Exception as e:
             print('Устройство '+ address + ' отключено.' + ' Ошибка: '+ str(e))
-            await self.deviceDisconnect(address)
+            await sio.emit('WORKER:DEVICE_DISCONNECTED', {"address": address})
+            # await self.deviceDisconnect(address)
             await asyncio.sleep(10)
             await self.deviceConnect(address)
-            await sio.emit('WORKER:DEVICE_DISCONNECTED', {"address": address})
             self.pointNumber = self.pointNumber + 1
 
     async def run_queue_consumer(self, queue: asyncio.Queue):

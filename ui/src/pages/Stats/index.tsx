@@ -3,6 +3,7 @@ import axios from "axios";
 import { Link } from "react-router-dom";
 import { AxisOptions, Chart } from "react-charts";
 import Graph from "./Graph";
+import { toast } from "react-toastify";
 
 const Stats = () => {
   const [scannedDataDates, setScannedDataDates] = useState([]);
@@ -41,8 +42,11 @@ const Stats = () => {
           <div className="col-md-6 mt-4">
             <ul>
               {scannedDataDates?.map((date) => (
-                <li onClick={(e) => fetchScanData(date)}>
-                  {date} <i className="bi bi-chevron-down"></i>
+                <li
+                  onClick={(e) => fetchScanData(date)}
+                  style={{ display: "block" }}
+                >
+                  Данные за {date} <i className="bi bi-chevron-down"></i>
                 </li>
               ))}
             </ul>
@@ -134,7 +138,7 @@ const Stats = () => {
               </tbody>
             </table>
           </div>
-          <div className="col-md-5 offset-md-1 d-flex justify-content-end">
+          <div className="col-md-5 offset-md-1 d-flex flex-column justify-content-end">
             {scannedData.length ? (
               <Graph
                 graphData={scannedData?.map((d) => ({
@@ -160,9 +164,46 @@ const Stats = () => {
             ) : (
               ""
             )}
+
             {/* <MyChart /> */}
             {/* <Chart data={data} axes={axes} /> */}
           </div>
+        </div>
+        <div className="d-flex">
+          {scannedData?.length ? (
+            <button
+              className="btn btn-primary footer__btn mt-3"
+              style={{ marginLeft: "1.5rem" }}
+              onClick={() =>
+                toast.error("Недостаточно данных для расчета скорости коррозии")
+              }
+            >
+              <img className="footer__btn-icon" src="process_icon.png" />
+              <span style={{ marginLeft: "2rem" }}>
+                Расчитать скорость <br />
+                коррозии
+              </span>
+            </button>
+          ) : (
+            ""
+          )}
+          {scannedData?.length ? (
+            <button
+              className="btn btn-primary footer__btn mt-3"
+              style={{ marginLeft: "1.5rem" }}
+              onClick={() => toast.error("Пользователь не авторизован")}
+            >
+              <span style={{ fontWeight: "900", fontSize: "2rem" }}> ✓</span>
+              {/* <i className="bi bi-check" className="footer__btn-icon"></i> */}
+              {/* <img className="footer__btn-icon" src="process_icon.png" /> */}
+              <span style={{ marginLeft: "2rem" }}>
+                Подписать и отправить <br />
+                данные
+              </span>
+            </button>
+          ) : (
+            ""
+          )}
         </div>
       </div>
     </div>

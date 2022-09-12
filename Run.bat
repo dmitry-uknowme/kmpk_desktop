@@ -1,1 +1,1 @@
-concurrently "cd C:\app\kmpk_desktop\server && node index.js" "cd C:\app\kmpk_desktop\ui && npm run dev" "python C:\app\kmpk_desktop\worker\main.py"
+concurrently -k "cd C:\app\kmpk_desktop\server && node index.js" "cd C:\app\kmpk_desktop\ui && npm run dev" "node timeout.js" "python C:\app\kmpk_desktop\worker\main.py"
