@@ -61,7 +61,9 @@ const DeviceCard: React.FC<IDevice> = ({
       num === (0.5).toFixed(1) ||
       num === (0.7).toFixed(1) ||
       num === (0.1).toFixed(1) ||
-      num === (0.2).toFixed(1)
+      num === (0.2).toFixed(1) ||
+      num === (0.4).toFixed(1) ||
+      num === (0.9).toFixed(1)
     ) {
       return false;
     }
