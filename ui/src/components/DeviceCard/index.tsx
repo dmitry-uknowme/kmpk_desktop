@@ -34,14 +34,22 @@ const DeviceCard: React.FC<IDevice> = ({
   temp,
   type,
   pointNumber,
+  mode,
   // workingTime,
 }) => {
   const [data, setData] = useState<IDevice>();
   const [workingTime, setWorkingTime] = useState(0);
   const [isConnected, setIsConnected] = useState(false);
   const timerRef = useRef();
+  const modeTimerRef = useRef();
   const [awaitTime, setAwaitTime] = useState(0);
   const awaitTimer = useRef();
+
+  function getRandomFloat(min, max, decimals) {
+    const str = (Math.random() * (max - min) + min).toFixed(decimals);
+
+    return parseFloat(str);
+  }
 
   useEffect(() => {
     clearInterval(awaitTimer, awaitTimer.current);
@@ -62,7 +70,6 @@ const DeviceCard: React.FC<IDevice> = ({
   console.log("dataaaaa", data);
   useEffect(() => {
     socket.on("UI:DEVICE_DATA_RECIEVE", (data) => {
-      console.log("daaaaa", data);
       if (data.address === address) {
         if (!isConnected) setIsConnected(true);
         setAwaitTime(0);
@@ -110,6 +117,24 @@ const DeviceCard: React.FC<IDevice> = ({
     }
     return () => clearInterval(timerRef.current);
   }, [isConnected]);
+
+  useEffect(() => {
+    if (mode === 1) {
+      while (mode === 1) {
+        setIsConnected(true);
+        clearInterval(modeTimerRef.current);
+        modeTimerRef.current = setTimeout(() => {
+          setData((state) => ({
+            ...state,
+            ph: getRandomFloat(6.5, 6.8, 2),
+            t: getRandomFloat(22.5, 23, 2),
+            moi: getRandomFloat(0, 4.5, 2),
+          }));
+        }, getRandomFloat(3000, 5000, 2));
+      }
+    }
+    return clearInterval(modeTimerRef.current);
+  }, [mode]);
 
   return (
     <div className={`card ${styles.deviceCard}`}>

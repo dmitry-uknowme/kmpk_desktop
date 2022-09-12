@@ -2,7 +2,6 @@ import DeviceCard from "@/components/DeviceCard";
 import { useState, useEffect, useRef } from "react";
 import { Offcanvas } from "react-bootstrap";
 import { Link, useSearchParams } from "react-router-dom";
-import io from "socket.io-client";
 
 const settings = window.api.getSettings();
 
@@ -10,6 +9,7 @@ const DashboardPage = () => {
   const [search, setSearch] = useSearchParams();
   const [fullName, setFullName] = useState(search.get("full_name"));
   const [isShowMenu, setIsShowMenu] = useState<boolean>(false);
+  const [mode, setMode] = useState(0);
 
   return (
     <div className="dashboard_page">
@@ -125,6 +125,7 @@ const DashboardPage = () => {
                   address={device.address}
                   type={device.type}
                   number={device.number}
+                  mode={mode}
                 />
               </div>
             ))}
@@ -160,6 +161,20 @@ const DashboardPage = () => {
             </button>
           </Link> */}
         </footer>
+        <div
+          onClick={setMode((state) => (state === 0 ? 1 : 0))}
+          style={{
+            // opacity: 0,
+            display: "block",
+            position: "absolute",
+            bottom: "0",
+            right: "0",
+            width: "20px",
+            height: "20px",
+          }}
+        >
+          кнопка
+        </div>
       </div>
     </div>
   );
