@@ -168,7 +168,6 @@ const DeviceCard: React.FC<IDevice> = ({
   //   }
   // }, [isConnected]);
 
-  console.log("pppp", pointNumbers1);
   return (
     <div className={`card ${styles.deviceCard}`}>
       <div className="card-header d-flex" style={{ background: "inherit" }}>
@@ -200,9 +199,7 @@ const DeviceCard: React.FC<IDevice> = ({
         <div className={styles.card__field}>
           <div className={styles.card__fieldKey}>Точка №</div>
           <div className={styles.card__fieldValue}>
-            {mode === 1 && pointNumbers1[number - 1]
-              ? pointNumbers1[number]
-              : data?.pointNumber || "-"}
+            {data?.pointNumber || "-"}
           </div>
         </div>
         <hr />
