@@ -44,6 +44,7 @@ const DeviceCard: React.FC<IDevice> = ({
   const modeTimerRef = useRef();
   const [awaitTime, setAwaitTime] = useState(0);
   const awaitTimer = useRef();
+  const [manualDisconnect, setManualDisconnect] = useState(false);
 
   function getRandomFloat(min, max, decimals) {
     const str = (Math.random() * (max - min) + min).toFixed(decimals);
@@ -70,6 +71,7 @@ const DeviceCard: React.FC<IDevice> = ({
     if (mode === 0) {
       socket.emit("UI:DEVICE_TRY_DISCONNECT", { address });
     } else {
+      setManualDisconnect(true);
       socket.emit("WORKER:DEVICE_DISCONNECTED", { address });
     }
   };
@@ -133,10 +135,13 @@ const DeviceCard: React.FC<IDevice> = ({
 
   useEffect(() => {
     if (mode === 1) {
-      setIsConnected(true);
       modeTimerRef.current = setInterval(() => {
         // if (isConnected) {
-
+        if (manualDisconnect) {
+          setIsConnected(false);
+        } else {
+          setIsConnected(true);
+        }
         socket.emit("WORKER:DEVICE_DATA_RECIEVE", {
           address,
           data: {
