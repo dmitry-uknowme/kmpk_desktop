@@ -147,7 +147,7 @@ const DashboardPage = () => {
               </span>
             </button>
           </Link>
-          <Link to="/protocol">
+          {/* <Link to="/protocol">
             <button
               className="btn btn-primary footer__btn"
               style={{ marginLeft: "1.5rem" }}
@@ -158,7 +158,7 @@ const DashboardPage = () => {
                 протокол
               </span>
             </button>
-          </Link>
+          </Link> */}
         </footer>
       </div>
     </div>
