@@ -138,27 +138,29 @@ const DeviceCard: React.FC<IDevice> = ({
 
   useEffect(() => {
     if (mode === 1) {
+      setIsConnected(true);
       modeTimerRef.current = setInterval(() => {
-        // if (isConnected) {
-        // if (!manualDisconnect) {
-        //   setIsConnected(false);
-        // }
-        socket.emit("WORKER:DEVICE_DATA_RECIEVE", {
-          address,
-          data: {
-            temp: getRandomFloat(
-              data?.temp ? data?.temp : 22.5,
-              data?.temp ? data?.temp + 0.1 : 23,
-              1
-            ),
-            ph: getRandomFloat(5.5, 5.8, 2),
-            h2: getRandomFloat(0, 1, 2).toFixed(0),
-            moi: getRandomFloat(0, 1, 2),
-            Lat: "",
-            Long: "",
-            timestamp: 1662888683978,
-          },
-        });
+        if (isConnected) {
+          // if (!manualDisconnect) {
+          //   setIsConnected(false);
+          // }
+          socket.emit("WORKER:DEVICE_DATA_RECIEVE", {
+            address,
+            data: {
+              temp: getRandomFloat(
+                data?.temp ? data?.temp : 22.5,
+                data?.temp ? data?.temp + 0.1 : 23,
+                1
+              ),
+              ph: getRandomFloat(5.5, 5.8, 2),
+              h2: getRandomFloat(0, 1, 2).toFixed(0),
+              moi: getRandomFloat(0, 1, 2),
+              Lat: "",
+              Long: "",
+              timestamp: 1662888683978,
+            },
+          });
+        }
       }, 3000 + getRandomFloat(500, 1000));
     } else {
       setIsConnected(false);
