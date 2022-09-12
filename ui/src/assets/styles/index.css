@@ -92,3 +92,15 @@ table td,th{
 .dashboard_page,.stats_page {
   padding: 1.2rem;
 }
+
+
+table {
+  overflow: auto;
+  height: 100px;
+}
+
+table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}

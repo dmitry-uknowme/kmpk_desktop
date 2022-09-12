@@ -148,6 +148,7 @@ app.get("/getScannedData", (req, res) => {
     //  for (let i)
     files
       ?.filter((f) => f !== "info.json")
+      ?.sort((a, b) => (parseInt(b) > parseInt(a) ? -1 : 1))
       ?.map((file) =>
         data.push(
           JSON.parse(
