@@ -2,13 +2,13 @@
   "devices": [
     {
       "number": 1,
-      "address": "20:C3:8F:BE:B3:1B",
+      "address": "00:15:87:00:B7:E2",
       "type": "Hydro",
       "point_number": 0
     },
     {
       "number": 2,
-      "address": "50:65:83:79:24:9F",
+      "address": "88:25:83:F0:97:90",
       "type": "Hydro",
       "point_number": 0
     },

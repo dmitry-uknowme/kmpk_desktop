@@ -80,67 +80,56 @@ io.on("connection", (socket) => {
     if (!fs.existsSync(`../data/${dateDirName}`)) {
       fs.mkdirSync(`../data/${dateDirName}`, { recursive: true });
     }
+    try {
+      if (
+        !fs.existsSync(
+          `../data/${dateDirName}/${pointNumber}[${convertAddress(
+            address
+          )}].json`
+        )
+      ) {
+        await fsPromises.writeFile(
+          `../data/${dateDirName}/${pointNumber}[${convertAddress(
+            address
+          )}].json`,
+          JSON.stringify({
+            info: {
+              address,
+              type,
+              pointNumber,
+              start_time: new Date().toLocaleTimeString(),
+              end_time: null,
+            },
+            data: [],
+          })
+        );
+      }
 
-    if (
-      !fs.existsSync(
-        `../data/${dateDirName}/${pointNumber}[${convertAddress(address)}].json`
-      )
-    ) {
+      const oldData = JSON.parse(
+        await fsPromises.readFile(
+          `../data/${dateDirName}/${pointNumber}[${convertAddress(
+            address
+          )}].json`
+        )
+      );
+
+      oldData.data = [
+        ...oldData.data,
+        { ...data.data, timestamp: new Date().getTime() },
+      ];
+      const newData = oldData;
+
       await fsPromises.writeFile(
         `../data/${dateDirName}/${pointNumber}[${convertAddress(
           address
         )}].json`,
-        JSON.stringify({
-          info: {
-            address,
-            type,
-            pointNumber,
-            start_time: new Date().toLocaleTimeString(),
-            end_time: null,
-          },
-          data: [],
-        })
+        JSON.stringify(newData, null, 2)
       );
+
+      socket.broadcast.emit("UI:DEVICE_DATA_RECIEVE", { ...data, pointNumber });
+    } catch (e) {
+      console.log("unable to write file", e);
     }
-    // if (
-    //   !fs.existsSync(`../data/${dateDirName}/${pointNumber}[${address}].json`)
-    // ) {
-    //   // execSync(
-    //   //   `touch ..\\data\\${dateDirName}\\${pointNumber}[${address}].json`
-    //   // );
-    //   fs.writeFileSync(
-    //     `../data/${dateDirName}/${pointNumber}[${address}].json`,
-    //     JSON.stringify({
-    //       info: {
-    //         address,
-    //         type,
-    //         pointNumber,
-    //         start_time: new Date().toLocaleTimeString(),
-    //         end_time: null,
-    //       },
-    //       data: [],
-    //     })
-    //   );
-    // }
-
-    const oldData = JSON.parse(
-      await fsPromises.readFile(
-        `../data/${dateDirName}/${pointNumber}[${convertAddress(address)}].json`
-      )
-    );
-
-    oldData.data = [
-      ...oldData.data,
-      { ...data.data, timestamp: new Date().getTime() },
-    ];
-    const newData = oldData;
-
-    await fsPromises.writeFile(
-      `../data/${dateDirName}/${pointNumber}[${convertAddress(address)}].json`,
-      JSON.stringify(newData, null, 2)
-    );
-
-    socket.broadcast.emit("UI:DEVICE_DATA_RECIEVE", { ...data, pointNumber });
   });
 });
 

@@ -193,22 +193,24 @@ class BtWorker():
             try:
                 await queue.put((time.time(), data, address))
             except Exception as e:
-                print('disconn', e,address)
+                print('Устройство '+ address + ' отключено.' 'Ошибка: '+ e)
                 await sio.emit('WORKER:DEVICE_DISCONNECTED', {"address": address})
                 self.pointNumber = self.pointNumber + 1
         try:
             async with BleakClient(address, timeout=10.0) as client:
                 if (client.is_connected):
-                    client.disconnect()
+                    await client.disconnect()
                 logger.info(f"Connected: {client.is_connected}")
                 # self.detectedDevices.append({"address":address, "number":})
                 await sio.emit('WORKER:DEVICE_CONNECTED', {"address": address, "pointNumber": self.pointNumber})
                 self.pointNumber = self.pointNumber + 1
                 while True:
+                    if ( not await client.is_connected()):
+                        await client.connect()
                     await client.start_notify(char_uuid, callback_handler)
                     await asyncio.sleep(15)
         except Exception as e:
-            print('disconn2', e,address)
+            print('Устройство '+ address + ' отключено.' 'Ошибка: '+ e)
             await self.deviceDisconnect(address)
             await asyncio.sleep(10)
             await self.deviceConnect(address)
@@ -235,8 +237,7 @@ class BtWorker():
                     tempData += data.decode("ascii")
                     if '\r' not in tempData:
                         continue
-                    # tempData = tempData.replace(',Ti=', '')
-                    print('ttttt', tempData, 'addd', address)
+                    print('Полученные данные:', tempData, 'Устройство:', address)
 
                     tmp = dict(s.split("=") for s in tempData.split(","))
                     obj = dict()
@@ -286,8 +287,9 @@ class BtWorker():
 
     async def deviceDisconnect(self,address:str):
         async with BleakClient(address, timeout=10.0) as client:
-            if (client.is_connected):
-                client.disconnect()
+            if (await client.is_connected):
+                await client.stop_notify(CHARACTERISTIC_UUID)
+                await client.disconnect()
                 logger.info(f"Disconnected: {client.is_connected}")
                 await sio.emit('WORKER:DEVICE_DISCONNECTED', {"address": address, "pointNumber": self.pointNumber})
                 
