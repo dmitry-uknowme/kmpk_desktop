@@ -49,6 +49,8 @@ async function createWindow() {
     },
   });
 
+  win.setAlwaysOnTop(true, "screen");
+
   electronLocalshortcut.register(win, "F2", () => {
     let script = nodeChildProcess.spawn("cmd.exe", [
       "/c",
@@ -125,6 +127,8 @@ ipcMain.handle("open-win", (event, arg) => {
       preload,
     },
   });
+
+  childWindow.setAlwaysOnTop(true, "screen");
 
   if (app.isPackaged) {
     childWindow.loadFile(indexHtml, { hash: arg });
