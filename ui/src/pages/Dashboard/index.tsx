@@ -126,8 +126,6 @@ const DashboardPage = () => {
                   type={device.type}
                   number={device.number}
                   mode={mode}
-                  pointNumbers1={pointNumbers1}
-                  setPointNumbers1={setPointNumbers1}
                 />
               </div>
             ))}

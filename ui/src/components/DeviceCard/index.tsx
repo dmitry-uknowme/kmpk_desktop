@@ -35,8 +35,6 @@ const DeviceCard: React.FC<IDevice> = ({
   type,
   pointNumber,
   mode,
-  pointNumbers1,
-  setPointNumbers1,
   // workingTime,
 }) => {
   const [data, setData] = useState<IDevice>();
