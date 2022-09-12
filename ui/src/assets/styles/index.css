@@ -94,14 +94,18 @@ table td,th{
 }
 
 
-table {
-  overflow: auto;
-  height: 100px;
-  max-height: 400px;
+thead,
+tbody {
+  display: block;
 }
 
-table thead th {
-  position: sticky;
-  top: 0;
-  z-index: 1;
+tbody {
+  max-height: 350px;
+  /* Just for the demo          */
+  overflow-y: auto;
+  /* Trigger vertical scroll    */
+  overflow-x: hidden;
+  /* Hide the horizontal scroll */
 }
+
+
