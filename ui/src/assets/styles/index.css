@@ -97,6 +97,7 @@ table td,th{
 table {
   overflow: auto;
   height: 100px;
+  max-height: 400px;
 }
 
 table thead th {
