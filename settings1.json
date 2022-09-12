@@ -1,0 +1,23 @@
+{
+  "devices": [
+    {
+      "number": 1,
+      "address": "88:25:B3:F0:97:90",
+      "type": "Hydro",
+      "point_number": 0
+    },
+    {
+      "number": 2,
+      "address": "00:15:87:00:B7:E2",
+      "type": "Hydro",
+      "point_number": 0
+    },
+    {
+      "number": 3,
+      "address": "00:15:85:14:9C:09",
+      "type": "Ground",
+      "point_number": 0
+    }
+  ],
+  "saveFolder": "E:\\"
+}
