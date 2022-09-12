@@ -11,6 +11,16 @@ const DashboardPage = () => {
   const [isShowMenu, setIsShowMenu] = useState<boolean>(false);
   const [mode, setMode] = useState(0);
 
+  // useEffect(() => {
+  //   if (mode === 0) {
+  //     window.mode = 1;
+  //   }
+  // }, [mode]);
+
+  useEffect(() => {
+    window?.mode === 1 ? setMode(1) : null;
+  }, []);
+
   return (
     <div className="dashboard_page">
       <Offcanvas
@@ -165,6 +175,7 @@ const DashboardPage = () => {
           onClick={() =>
             setMode((state) => {
               console.log("chhh mmmm", state);
+
               return state === 0 ? 1 : 0;
             })
           }

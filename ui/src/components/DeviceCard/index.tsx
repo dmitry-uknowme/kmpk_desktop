@@ -1,6 +1,7 @@
 import styles from "./index.module.sass";
 import io from "socket.io-client";
 import { useEffect, useRef, useState } from "react";
+import { toast } from "react-toastify";
 
 const socket = io("ws://localhost:8081");
 
@@ -51,6 +52,22 @@ const DeviceCard: React.FC<IDevice> = ({
     return parseFloat(str);
   }
 
+  const pseudoRandom = () => {
+    console.log("pssss");
+    const num = Math.random().toFixed(1);
+    console.log("nnnnnn", num);
+    if (
+      num === (0.3).toFixed(1) ||
+      num === (0.5).toFixed(1) ||
+      num === (0.7).toFixed(1) ||
+      num === (0.1).toFixed(1) ||
+      num === (0.2).toFixed(1)
+    ) {
+      return false;
+    }
+    return true;
+  };
+
   useEffect(() => {
     clearInterval(awaitTimer, awaitTimer.current);
 
@@ -63,9 +80,37 @@ const DeviceCard: React.FC<IDevice> = ({
     if (mode === 0) {
       socket.emit("UI:DEVICE_TRY_CONNECT", { address });
     } else {
+      // toast.info(`Запрос на подключение к устройству №${number} отправлен`);
       // clearInterval(modeTimerRef.current);
+      clearInterval(modeTimerRef.current);
+      modeTimerRef.current = setInterval(() => {
+        // if (isConnected) {
+        // if (!manualDisconnect) {
+        //   setIsConnected(false);
+        // }
+        socket.emit("WORKER:DEVICE_DATA_RECIEVE", {
+          address,
+          data: {
+            temp: getRandomFloat(
+              data?.temp ? data?.temp : 22.5,
+              data?.temp ? data?.temp + 0.1 : 23,
+              1
+            ),
+            ph: getRandomFloat(5.5, 5.8, 2),
+            h2: getRandomFloat(0, 1, 2).toFixed(0),
+            moi: getRandomFloat(0, 1, 2),
+            Lat: pseudoRandom() ? getRandomFloat(59.761062, 59.761395, 6) : "",
+            Long: pseudoRandom() ? getRandomFloat(30.352992, 30.352564, 6) : "",
+            timestamp: new Date().getTime(),
+          },
+        });
+        // }
+      }, 3000 + getRandomFloat(500, 1000));
+
       setManualDisconnect(false);
-      socket.emit("WORKER:DEVICE_CONNECTED", { address });
+      setTimeout(() => {
+        socket.emit("WORKER:DEVICE_CONNECTED", { address });
+      }, 3000 + getRandomFloat(500, 1000));
     }
   };
 
@@ -81,13 +126,12 @@ const DeviceCard: React.FC<IDevice> = ({
   useEffect(() => {
     socket.on("UI:DEVICE_DATA_RECIEVE", (data) => {
       if (data.address === address) {
-        if (!isConnected) setIsConnected(true);
+        // if (!isConnected && mode !== 1) setIsConnected(true);
         setAwaitTime(0);
         clearInterval(awaitTimer, awaitTimer.current);
         awaitTimer.current = setInterval(() => {
           setAwaitTime((state) => (state += 1));
         }, 1000);
-
         setData((state) => ({ ...state, ...data.data }));
       }
     });
@@ -116,6 +160,7 @@ const DeviceCard: React.FC<IDevice> = ({
   }, []);
 
   useEffect(() => {
+    // setIsConnected(true);
     setWorkingTime(0);
     clearInterval(timerRef.current);
     if (isConnected) {
@@ -138,33 +183,33 @@ const DeviceCard: React.FC<IDevice> = ({
 
   useEffect(() => {
     if (mode === 1) {
-      setTimeout(() => {
-        tryConnectDevice();
-      }, 3000 + getRandomFloat(500, 1000));
+      // if (isConnected) {
 
+      tryConnectDevice();
+      // }
       clearInterval(modeTimerRef.current);
       modeTimerRef.current = setInterval(() => {
-        if (isConnected) {
-          // if (!manualDisconnect) {
-          //   setIsConnected(false);
-          // }
-          socket.emit("WORKER:DEVICE_DATA_RECIEVE", {
-            address,
-            data: {
-              temp: getRandomFloat(
-                data?.temp ? data?.temp : 22.5,
-                data?.temp ? data?.temp + 0.1 : 23,
-                1
-              ),
-              ph: getRandomFloat(5.5, 5.8, 2),
-              h2: getRandomFloat(0, 1, 2).toFixed(0),
-              moi: getRandomFloat(0, 1, 2),
-              Lat: "",
-              Long: "",
-              timestamp: 1662888683978,
-            },
-          });
-        }
+        // if (isConnected) {
+        // if (!manualDisconnect) {
+        //   setIsConnected(false);
+        // }
+        socket.emit("WORKER:DEVICE_DATA_RECIEVE", {
+          address,
+          data: {
+            temp: getRandomFloat(
+              data?.temp ? data?.temp : 22.5,
+              data?.temp ? data?.temp + 0.1 : 23,
+              1
+            ),
+            ph: getRandomFloat(5.5, 5.8, 2),
+            h2: getRandomFloat(0, 1, 2).toFixed(0),
+            moi: getRandomFloat(0, 1, 2),
+            Lat: pseudoRandom() ? getRandomFloat(59.761062, 59.761395, 6) : "",
+            Long: pseudoRandom() ? getRandomFloat(30.352992, 30.352564, 6) : "",
+            timestamp: new Date().getTime(),
+          },
+        });
+        // }
       }, 3000 + getRandomFloat(500, 1000));
     }
     // return clearInterval(modeTimerRef.current);
