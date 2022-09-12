@@ -202,10 +202,7 @@ const api = {
   },
   getSettings: (): string => {
     const settings = JSON.parse(
-      fs.readFileSync(
-        `/home/dmitry/projects/kmpk_desktop/settings.json`,
-        "utf8"
-      )
+      fs.readFileSync(`${APP_DIR}\\settings.json`, "utf8")
     );
     return settings;
   },
