@@ -50,117 +50,134 @@ const Stats = () => {
                 </li>
               ))}
             </ul>
-            <table className="table">
-              <thead>
-                <tr>
-                  <th>
-                    № точки
-                    <br /> измерения
-                  </th>
-                  <th>
-                    Время <br />
-                    измерения
-                  </th>
-                  <th>
-                    Среднее знач-е <br />
-                    PPM
-                  </th>
-                  <th>Влажность</th>
-                  <th>Температура</th>
-                  <th>pH</th>
-                  <th>
-                    Кол-во
-                    <br />
-                    замеров
-                  </th>
-                  <th>GPS</th>
-                  <th>Тип устройства</th>
-                  <th>Комментарий</th>
-                </tr>
-              </thead>
-              <tbody>
-                {scannedData.map((data) => (
-                  <tr
-                    style={{
-                      background:
-                        data?.info?.pointNumber === selectedPoint ? "#bbb" : "",
-                    }}
-                    onClick={() => {
-                      setSelectedPoint(data?.info?.pointNumber);
-                    }}
-                  >
-                    <td>{data?.info?.pointNumber}</td>
-                    <td>{data?.info?.start_time}</td>
-                    <td>
-                      {data?.info.type === "Ground"
-                        ? "-"
-                        : data.data
-                            .reduce(function (avg, value) {
-                              return avg + value.h2 / data.data.length;
-                            }, 0)
-                            .toFixed(2)}
-                    </td>
-                    <td>
-                      {data?.info.type === "Ground"
-                        ? data.data
-                            .reduce(function (avg, value) {
-                              return avg + value.moi / data.data.length;
-                            }, 0)
-                            .toFixed(2)
-                        : "-"}
-                    </td>
-                    <td>
-                      {data?.info.type === "Ground" ? data.data[0].temp : "-"}
-                    </td>
-                    <td>
-                      {data?.info.type === "Ground"
-                        ? data.data
-                            .reduce(function (avg, value) {
-                              return (
-                                avg + parseFloat(value.ph) / data.data.length
-                              );
-                            }, 0)
-                            .toFixed(2)
-                        : "-"}
-                    </td>
-                    <td>{data?.data?.length}</td>
-                    <td>
-                      {data?.data[0]?.Lat}
+            <div className="cont">
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th>
+                      № точки
+                      <br /> измерения
+                    </th>
+                    <th>
+                      Время <br />
+                      измерения
+                    </th>
+                    <th>
+                      Среднее знач-е <br />
+                      PPM
+                    </th>
+                    <th>Влажность</th>
+                    <th>Температура</th>
+                    <th>pH</th>
+                    <th>
+                      Кол-во
                       <br />
-                      {data?.data[0]?.Long}
-                    </td>
-                    <td>
-                      {data?.info.type === "Ground" ? "Грунт" : "Водород"}
-                    </td>
-                    <td></td>
+                      замеров
+                    </th>
+                    <th>GPS</th>
+                    <th>Тип устройства</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {scannedData.map((data) => (
+                    <tr
+                      style={{
+                        background:
+                          data?.info?.pointNumber === selectedPoint
+                            ? "#bbb"
+                            : "",
+                      }}
+                      onClick={() => {
+                        setSelectedPoint(data?.info?.pointNumber);
+                      }}
+                    >
+                      <td>{data?.info?.pointNumber}</td>
+                      <td>{data?.info?.start_time}</td>
+                      <td>
+                        {data?.info.type === "Ground"
+                          ? "-"
+                          : data.data
+                              .reduce(function (avg, value) {
+                                return avg + value.h2 / data.data.length;
+                              }, 0)
+                              .toFixed(2)}
+                      </td>
+                      <td>
+                        {data?.info.type === "Ground"
+                          ? data.data
+                              .reduce(function (avg, value) {
+                                return avg + value.moi / data.data.length;
+                              }, 0)
+                              .toFixed(2)
+                          : "-"}
+                      </td>
+                      <td>
+                        {data?.info.type === "Ground" ? data.data[0].temp : "-"}
+                      </td>
+                      <td>
+                        {data?.info.type === "Ground"
+                          ? data.data
+                              .reduce(function (avg, value) {
+                                return (
+                                  avg + parseFloat(value.ph) / data.data.length
+                                );
+                              }, 0)
+                              .toFixed(2)
+                          : "-"}
+                      </td>
+                      <td>{data?.data?.length}</td>
+                      <td>
+                        {data?.data[0]?.Lat}
+                        <br />
+                        {data?.data[0]?.Long}
+                      </td>
+                      <td>
+                        {data?.info.type === "Ground" ? "Грунт" : "Водород"}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
           <div className="col-md-5 offset-md-1 d-flex flex-column justify-content-end">
             {scannedData.length ? (
-              <Graph
-                graphData={scannedData?.map((d) => ({
-                  primary: d.info.pointNumber,
-                  secondary: d.data
-                    .reduce(function (avg, value) {
-                      return avg + value.h2 / d.data.length;
-                    }, 0)
-                    .toFixed(2),
-                }))}
-              />
+              <div style={{ overflowX: "scroll" }}>
+                <div
+                  className="chart-container"
+                  style={{ position: "relative", width: "900px" }}
+                >
+                  <Graph
+                    graphData={scannedData?.map((d) => ({
+                      primary: d.info.pointNumber,
+                      secondary: d.data
+                        .filter((a) => a.type === "Hydrogen")
+                        .reduce(function (avg, value) {
+                          return avg + value.h2 / d.data.length;
+                        }, 0)
+                        .toFixed(2),
+                    }))}
+                  />
+                </div>
+              </div>
             ) : (
               ""
             )}
 
             {scannedData[selectedPoint] ? (
-              <Graph
-                graphData={scannedData[selectedPoint].data.map((d) => ({
-                  primary: new Date(d.timestamp).toLocaleTimeString(),
-                  secondary: d.h2,
-                }))}
-              />
+              <div style={{ overflowX: "scroll" }}>
+                <div
+                  className="chart-container"
+                  style={{ position: "relative", width: "900px" }}
+                >
+                  <Graph
+                    graphData={scannedData[selectedPoint].data.map((d) => ({
+                      primary: new Date(d.timestamp).toLocaleTimeString(),
+                      secondary: d.h2,
+                    }))}
+                  />
+                </div>
+              </div>
             ) : (
               ""
             )}

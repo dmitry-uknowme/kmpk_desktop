@@ -96,7 +96,7 @@ io.on("connection", (socket) => {
               address,
               type,
               pointNumber,
-              start_time: new Date().toLocaleTimeString(),
+              start_time: new Date().getTime(),
               end_time: null,
             },
             data: [],

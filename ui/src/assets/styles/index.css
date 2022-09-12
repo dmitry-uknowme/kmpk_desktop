@@ -94,18 +94,47 @@ table td,th{
 }
 
 
-thead,
-tbody {
-  display: block;
+/* table {
+  display: grid;
+  width: 100px;
+  height: 70px;
+  overflow: auto;
+
+  grid-auto-columns: max-content;
 }
 
-tbody {
-  max-height: 350px;
-  /* Just for the demo          */
-  overflow-y: auto;
-  /* Trigger vertical scroll    */
-  overflow-x: auto;
-  /* Hide the horizontal scroll */
+thead {
+  position: sticky;
+  top: 0;
+  grid-row: 1;
+
+  background-color: #fff;
+  font-weight: bold;
+} */
+
+
+table {
+  border-collapse: collapse;
 }
 
+table th,
+table td {
+  max-width: 300px;
+  padding: 8px 16px;
+  border: 1px solid #ddd;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 
+table thead {
+  position: sticky;
+  inset-block-start: 0;
+  background-color: #ddd;
+}
+
+.cont {
+  overflow: scroll;
+  height: 350px;
+  width: 100%;
+}
