@@ -132,7 +132,8 @@ const DeviceCard: React.FC<IDevice> = ({
   };
 
   useEffect(() => {
-    if (mode === 1 && isConnected) {
+    if (mode === 1) {
+      setIsConnected(true);
       modeTimerRef.current = setInterval(() => {
         // if (isConnected) {
 
