@@ -57,11 +57,11 @@ io.on("connection", (socket) => {
     dp.point_number = pointNumber;
     devices = [...devices.filter((d) => d.address !== data.address), dp];
 
-    socket.broadcast.emit("UI:DEVICE_CONNECTED", data);
+    socket.emit("UI:DEVICE_CONNECTED", data);
   });
 
   socket.on("WORKER:DEVICE_DISCONNECTED", (data) => {
-    socket.broadcast.emit("UI:DEVICE_DISCONNECTED", data);
+    socket.emit("UI:DEVICE_DISCONNECTED", data);
   });
 
   socket.on("WORKER:DEVICE_DATA_RECIEVE", async (data) => {
