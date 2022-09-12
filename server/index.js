@@ -57,7 +57,7 @@ io.on("connection", (socket) => {
     dp.point_number = pointNumber;
     devices = [...devices.filter((d) => d.address !== data.address), dp];
 
-    socket.emit("UI:DEVICE_CONNECTED", data);
+    socket.emit("UI:DEVICE_CONNECTED", { ...data, pointNumber });
   });
 
   socket.on("WORKER:DEVICE_DISCONNECTED", (data) => {

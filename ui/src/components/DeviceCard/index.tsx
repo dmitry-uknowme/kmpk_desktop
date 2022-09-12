@@ -132,9 +132,8 @@ const DeviceCard: React.FC<IDevice> = ({
   };
 
   useEffect(() => {
-    if (mode === 1) {
+    if (mode === 1 && isConnected) {
       modeTimerRef.current = setInterval(() => {
-        setIsConnected(true);
         // if (isConnected) {
 
         socket.emit("WORKER:DEVICE_DATA_RECIEVE", {
@@ -158,7 +157,7 @@ const DeviceCard: React.FC<IDevice> = ({
       setIsConnected(false);
     }
     // return clearInterval(modeTimerRef.current);
-  }, [mode]);
+  }, [mode, isConnected]);
 
   // useEffect(() => {
   //   if (mode === 1 && isConnected === true) {
