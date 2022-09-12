@@ -140,7 +140,7 @@ const DeviceCard: React.FC<IDevice> = ({
         // if (isConnected) {
         if (!manualDisconnect) {
           setIsConnected(false);
-
+        }
         socket.emit("WORKER:DEVICE_DATA_RECIEVE", {
           address,
           data: {

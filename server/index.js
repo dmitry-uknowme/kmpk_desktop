@@ -66,7 +66,7 @@ io.on("connection", (socket) => {
 
   socket.on("WORKER:DEVICE_DATA_RECIEVE", async (data) => {
     const pointNumber =
-      devices.find((d) => d.address === data.address).point_number || 0;
+      devices.find((d) => d.address === data.address).point_number || 1;
     const address = data.address;
 
     const type = devices.find((device) => device.address === address).type;
