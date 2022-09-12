@@ -10,7 +10,6 @@ const DashboardPage = () => {
   const [fullName, setFullName] = useState(search.get("full_name"));
   const [isShowMenu, setIsShowMenu] = useState<boolean>(false);
   const [mode, setMode] = useState(0);
-  const [pointNumbers1, setPointNumbers1] = useState([1, 1, 1]);
 
   return (
     <div className="dashboard_page">

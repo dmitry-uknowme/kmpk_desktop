@@ -64,7 +64,7 @@ const DeviceCard: React.FC<IDevice> = ({
     if (mode === 0) {
       socket.emit("UI:DEVICE_TRY_CONNECT", { address });
     } else {
-      setIsConnected(true);
+      socket.emit("UI:DEVICE_DISCONNECTED", { address });
     }
   };
 
@@ -72,7 +72,7 @@ const DeviceCard: React.FC<IDevice> = ({
     if (mode === 0) {
       socket.emit("UI:DEVICE_TRY_DISCONNECT", { address });
     } else {
-      setIsConnected(false);
+      socket.emit("WORKER:DEVICE_DISCONNECTED", { address });
     }
   };
   useEffect(() => {
@@ -87,7 +87,6 @@ const DeviceCard: React.FC<IDevice> = ({
 
         setData((state) => ({ ...state, ...data.data }));
       }
-      // console.log("dataaaaa", data);
     });
     socket.on("UI:DEVICE_CONNECTED", (data) => {
       console.log("connectd", data);
@@ -156,20 +155,6 @@ const DeviceCard: React.FC<IDevice> = ({
             timestamp: 1662888683978,
           },
         });
-        // setData((state) => ({
-        //   ...state,
-        //   ph: getRandomFloat(5.5, 5.8, 2),
-        //   h2: getRandomFloat(0, 1, 2).toFixed(0),
-        //   Long: "",
-        //   Lat: "",
-        //   moi: getRandomFloat(0, 1, 2),
-        //   temp: getRandomFloat(
-        //     state?.temp ? state?.temp : 22.5,
-        //     state?.temp ? state?.temp + 0.1 : 23,
-        //     1
-        //   ),
-        // }));
-        // }
       }, 3000 + getRandomFloat(500, 1000));
     } else {
       setIsConnected(false);
@@ -177,11 +162,12 @@ const DeviceCard: React.FC<IDevice> = ({
     // return clearInterval(modeTimerRef.current);
   }, [mode]);
 
-  useEffect(() => {
-    if (mode === 1 && isConnected === true) {
-      setPointNumbers1((state) => [...state.map((p) => p++)]);
-    }
-  }, [isConnected]);
+  // useEffect(() => {
+  //   if (mode === 1 && isConnected === true) {
+  //     setPointNumbers1((state) => [...state.map((p) => p++)]);
+  //   }
+  // }, [isConnected]);
+
   console.log("pppp", pointNumbers1);
   return (
     <div className={`card ${styles.deviceCard}`}>
