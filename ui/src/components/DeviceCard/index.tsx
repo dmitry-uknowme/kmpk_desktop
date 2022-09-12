@@ -101,8 +101,8 @@ const DeviceCard: React.FC<IDevice> = ({
             ph: getRandomFloat(5.5, 5.8, 2),
             h2: getRandomFloat(0, 1, 2).toFixed(0),
             moi: getRandomFloat(0, 1, 2),
-            Lat: pseudoRandom() ? getRandomFloat(59.761062, 59.761395, 6) : "",
-            Long: pseudoRandom() ? getRandomFloat(30.352992, 30.352564, 6) : "",
+            Lat: pseudoRandom() ? "" : getRandomFloat(59.761062, 59.761395, 6),
+            Long: pseudoRandom() ? "" : getRandomFloat(30.352992, 30.352564, 6),
             timestamp: new Date().getTime(),
           },
         });
@@ -206,8 +206,8 @@ const DeviceCard: React.FC<IDevice> = ({
             ph: getRandomFloat(5.5, 5.8, 2),
             h2: getRandomFloat(0, 1, 2).toFixed(0),
             moi: getRandomFloat(0, 1, 2),
-            Lat: pseudoRandom() ? getRandomFloat(59.761062, 59.761395, 6) : "",
-            Long: pseudoRandom() ? getRandomFloat(30.352992, 30.352564, 6) : "",
+            Lat: pseudoRandom() ? "" : getRandomFloat(59.761062, 59.761395, 6),
+            Long: pseudoRandom() ? "" : getRandomFloat(30.352992, 30.352564, 6),
             timestamp: new Date().getTime(),
           },
         });
