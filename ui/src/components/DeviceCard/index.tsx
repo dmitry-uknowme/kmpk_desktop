@@ -108,10 +108,10 @@ const DeviceCard: React.FC<IDevice> = ({
     timerRef.current = setInterval(() => {
       setWorkingTime((state) => (state += 1));
     }, 1000);
-    if (awaitTime > 30000) {
-      console.log("больше 30 сек нет данных");
-      tryConnectDevice();
-    }
+    // if (awaitTime > 30000) {
+    //   console.log("больше 30 сек нет данных");
+    //   tryConnectDevice();
+    // }
     return () => clearInterval(timerRef.current);
   }, []);
 
@@ -138,7 +138,11 @@ const DeviceCard: React.FC<IDevice> = ({
 
   useEffect(() => {
     if (mode === 1) {
-      setIsConnected(true);
+      setTimeout(() => {
+        tryConnectDevice();
+      }, 3000 + getRandomFloat(500, 1000));
+
+      clearInterval(modeTimerRef.current);
       modeTimerRef.current = setInterval(() => {
         if (isConnected) {
           // if (!manualDisconnect) {
@@ -162,11 +166,9 @@ const DeviceCard: React.FC<IDevice> = ({
           });
         }
       }, 3000 + getRandomFloat(500, 1000));
-    } else {
-      setIsConnected(false);
     }
     // return clearInterval(modeTimerRef.current);
-  }, [mode, isConnected]);
+  }, [mode]);
 
   // useEffect(() => {
   //   if (mode === 1 && isConnected === true) {
