@@ -1,4 +1,4 @@
 ui/node_modules
 server/node_modules
 data
-settings.json
+#settings.json
