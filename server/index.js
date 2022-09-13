@@ -17,11 +17,11 @@ app.use(cors({ origin: "*", methods: ["GET", "POST"] }));
 
 let pointNumber = 0;
 
-const APP_DIR = "C:\\app\\kmpk_desktop";
+const APP_DIR = "C:\\app\\kmpk_desktop1";
 // const APP_DIR = "/home/dmitry/projects/kmpk_desktop";
 
 let devices = JSON.parse(
-  fs.readFileSync(`${APP_DIR}/settings.json`, "utf8")
+  fs.readFileSync(`${APP_DIR}\\settings.json`, "utf8")
 ).devices;
 
 // let devices = [
@@ -118,7 +118,7 @@ io.on("connection", (socket) => {
         { ...data.data, timestamp: new Date().getTime() },
       ];
       const newData = oldData;
-
+      console.log("ddddd", newData);
       await fsPromises.writeFile(
         `../data/${dateDirName}/${pointNumber}[${convertAddress(
           address
