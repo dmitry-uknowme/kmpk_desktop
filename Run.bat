@@ -1,1 +1,1 @@
-concurrently "cd C:\app\kmpk_desktop\server && node index.js" "cd C:\app\kmpk_desktop\ui && npm run dev" "python C:\app\kmpk_desktop\worker\main.py"
+concurrently "cd C:\app\kmpk_desktop\ui && npm run dev" "npx kill-port 8081 && cd C:\app\kmpk_desktop\server && npm run dev" "start C:\app\kmpk_desktop\RunWorker.bat"
