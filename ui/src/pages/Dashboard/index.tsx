@@ -1,3 +1,4 @@
+// @ts-nocheck
 import DeviceCard from "@/components/DeviceCard";
 import { useState, useEffect, useRef } from "react";
 import { Offcanvas } from "react-bootstrap";

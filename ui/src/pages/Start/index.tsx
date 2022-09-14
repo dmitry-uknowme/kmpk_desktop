@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useLayoutEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 

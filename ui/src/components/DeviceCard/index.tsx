@@ -1,3 +1,4 @@
+// @ts-nocheck
 import styles from "./index.module.sass";
 import io from "socket.io-client";
 import { useEffect, useRef, useState } from "react";
