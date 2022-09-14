@@ -97,14 +97,15 @@ app
   .whenReady()
   .then(createWindow)
   .then(() => {
+    let s = nodeChildProcess.spawn("cmd.exe", [
+      "/c",
+      "start",
+      "C:app\\kmpk_desktop1\\RunWorker.bat",
+    ]);
+
     let script = nodeChildProcess.spawn("cmd.exe", [
       "/c",
-      "start C:\\projects\\kmpk_desktop1\\RunWorker.bat",
-      // "npx kill-port 8081",
-      // "cd C:\\projects\\kmpk_desktop1\\server && npm run dev",
-      // "start C:app\\kmpk_desktop1\\RunWorker.bat",
-      // `concurrently "C:\\Program Files\\nodejs\\npx kill-port 8081 && cd C:\\app\\kmpk_desktop1\\server && C:\\Program Files\\nodejs\\npm run dev"`,
-      // 'concurrently "npx kill-port 8081 && cd C:\\app\\kmpk_desktop1\\ui && npm run dev" "start C:app\\kmpk_desktop1\\RunWorker.bat"',
+      `npx kill-port 8081 && cd C:\\app\\kmpk_desktop1\\server && npm run dev`,
     ]);
 
     console.log("PID: " + script.pid);
