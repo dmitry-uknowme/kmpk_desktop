@@ -93,7 +93,34 @@ async function createWindow() {
   });
 }
 
-app.whenReady().then(createWindow);
+app
+  .whenReady()
+  .then(createWindow)
+  .then(() => {
+    let script = nodeChildProcess.spawn("cmd.exe", [
+      "/c",
+      "start C:\\projects\\kmpk_desktop1\\RunWorker.bat",
+      // "npx kill-port 8081",
+      // "cd C:\\projects\\kmpk_desktop1\\server && npm run dev",
+      // "start C:app\\kmpk_desktop1\\RunWorker.bat",
+      // `concurrently "C:\\Program Files\\nodejs\\npx kill-port 8081 && cd C:\\app\\kmpk_desktop1\\server && C:\\Program Files\\nodejs\\npm run dev"`,
+      // 'concurrently "npx kill-port 8081 && cd C:\\app\\kmpk_desktop1\\ui && npm run dev" "start C:app\\kmpk_desktop1\\RunWorker.bat"',
+    ]);
+
+    console.log("PID: " + script.pid);
+
+    script.stdout.on("data", (data) => {
+      console.log("stdout: " + data);
+    });
+
+    script.stderr.on("data", (err) => {
+      console.log("stderr: " + err);
+    });
+
+    script.on("exit", (code) => {
+      console.log("Exit Code: " + code);
+    });
+  });
 
 app.on("window-all-closed", () => {
   win = null;
