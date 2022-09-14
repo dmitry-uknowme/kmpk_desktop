@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { AxisOptions, Chart } from "react-charts";
 
 const Graph = ({ graphData }) => {
-  console.log("ggggg", graphData);
+  // console.log("ggggg", graphData);
   const data = [
     {
       label: "H2",

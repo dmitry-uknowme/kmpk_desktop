@@ -51,13 +51,11 @@ io.on("connection", (socket) => {
 
   socket.on("WORKER:DEVICE_CONNECTED", (data) => {
     pointNumber += 1;
-    console.log("pointt", pointNumber);
     const dp = devices.find((d) => d.address === data.address);
-    console.log("dpppp", dp);
     dp.point_number = pointNumber;
     devices = [...devices.filter((d) => d.address !== data.address), dp];
 
-    socket.broadcast.emit("UI:DEVICE_CONNECTED", data);
+    socket.broadcast.emit("UI:DEVICE_CONNECTED", { ...data, pointNumber });
   });
 
   socket.on("WORKER:DEVICE_DISCONNECTED", (data) => {
@@ -65,9 +63,9 @@ io.on("connection", (socket) => {
   });
 
   socket.on("WORKER:DEVICE_DATA_RECIEVE", async (data) => {
-    const pointNumber = devices.find(
-      (d) => d.address === data.address
-    ).point_number;
+    // const pointNumber = devices.find(
+    //   (d) => d.address === data.address
+    // ).point_number;
     const address = data.address;
 
     const type = devices.find((device) => device.address === address).type;
@@ -118,7 +116,7 @@ io.on("connection", (socket) => {
         { ...data.data, timestamp: new Date().getTime() },
       ];
       const newData = oldData;
-      console.log("ddddd", newData);
+      // console.log("ddddd", newData);
       await fsPromises.writeFile(
         `../data/${dateDirName}/${pointNumber}[${convertAddress(
           address

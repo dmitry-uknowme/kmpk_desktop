@@ -1,2 +1,2 @@
 SLEEP 5
-python C:\app\kmpk_desktop\worker\main.py
+python C:\app\kmpk_desktop1\worker\main.py

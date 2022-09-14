@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { AxisOptions, Chart } from "react-charts";
 import Graph from "./Graph";
 import { toast } from "react-toastify";
+import Graph2 from "./Graph2";
 
 const Stats = () => {
   const [scannedDataDates, setScannedDataDates] = useState([]);
@@ -50,117 +51,176 @@ const Stats = () => {
                 </li>
               ))}
             </ul>
-            <table className="table">
-              <thead>
-                <tr>
-                  <th>
-                    № точки
-                    <br /> измерения
-                  </th>
-                  <th>
-                    Время <br />
-                    измерения
-                  </th>
-                  <th>
-                    Среднее знач-е <br />
-                    PPM
-                  </th>
-                  <th>Влажность</th>
-                  <th>Температура</th>
-                  <th>pH</th>
-                  <th>
-                    Кол-во
-                    <br />
-                    замеров
-                  </th>
-                  <th>GPS</th>
-                  <th>Тип устройства</th>
-                  <th>Комментарий</th>
-                </tr>
-              </thead>
-              <tbody>
-                {scannedData.map((data) => (
-                  <tr
-                    style={{
-                      background:
-                        data?.info?.pointNumber === selectedPoint ? "#bbb" : "",
-                    }}
-                    onClick={() => {
-                      setSelectedPoint(data?.info?.pointNumber);
-                    }}
-                  >
-                    <td>{data?.info?.pointNumber}</td>
-                    <td>{data?.info?.start_time}</td>
-                    <td>
-                      {data?.info.type === "Ground"
-                        ? "-"
-                        : data.data
-                            .reduce(function (avg, value) {
-                              return avg + value.h2 / data.data.length;
-                            }, 0)
-                            .toFixed(2)}
-                    </td>
-                    <td>
-                      {data?.info.type === "Ground"
-                        ? data.data
-                            .reduce(function (avg, value) {
-                              return avg + value.moi / data.data.length;
-                            }, 0)
-                            .toFixed(2)
-                        : "-"}
-                    </td>
-                    <td>
-                      {data?.info.type === "Ground" ? data.data[0].temp : "-"}
-                    </td>
-                    <td>
-                      {data?.info.type === "Ground"
-                        ? data.data
-                            .reduce(function (avg, value) {
-                              return (
-                                avg + parseFloat(value.ph) / data.data.length
-                              );
-                            }, 0)
-                            .toFixed(2)
-                        : "-"}
-                    </td>
-                    <td>{data?.data?.length}</td>
-                    <td>
-                      {data?.data[0]?.Lat}
+            <div className="cont">
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th>
+                      № точки
+                      <br /> измерения
+                    </th>
+                    <th>
+                      Время <br />
+                      измерения
+                    </th>
+                    <th>
+                      Среднее знач-е <br />
+                      PPM
+                    </th>
+                    <th>Влажность</th>
+                    <th>Температура</th>
+                    <th>pH</th>
+                    <th>
+                      Кол-во
                       <br />
-                      {data?.data[0]?.Long}
-                    </td>
-                    <td>
-                      {data?.info.type === "Ground" ? "Грунт" : "Водород"}
-                    </td>
-                    <td></td>
+                      замеров
+                    </th>
+                    <th>GPS</th>
+                    <th>Тип устройства</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {scannedData.map((data) => (
+                    <tr
+                      style={{
+                        background:
+                          data?.info?.pointNumber === selectedPoint
+                            ? "#bbb"
+                            : "",
+                      }}
+                      onClick={() => {
+                        setSelectedPoint(data?.info?.pointNumber);
+                      }}
+                    >
+                      <td>{data?.info?.pointNumber}</td>
+                      <td>{data?.info?.start_time}</td>
+                      <td>
+                        {data?.info.type === "Ground"
+                          ? "-"
+                          : data.data
+                              .reduce(function (avg, value) {
+                                return avg + value.h2 / data.data.length;
+                              }, 0)
+                              .toFixed(2)}
+                      </td>
+                      <td>
+                        {data?.info.type === "Ground"
+                          ? data.data
+                              .reduce(function (avg, value) {
+                                return avg + value.moi / data.data.length;
+                              }, 0)
+                              .toFixed(2)
+                          : "-"}
+                      </td>
+                      <td>
+                        {data?.info.type === "Ground" ? data.data[0].temp : "-"}
+                      </td>
+                      <td>
+                        {data?.info.type === "Ground"
+                          ? data.data
+                              .reduce(function (avg, value) {
+                                return (
+                                  avg + parseFloat(value.ph) / data.data.length
+                                );
+                              }, 0)
+                              .toFixed(2)
+                          : "-"}
+                      </td>
+                      <td>{data?.data?.length}</td>
+                      <td>
+                        {data?.data[0]?.Lat}
+                        <br />
+                        {data?.data[0]?.Long}
+                      </td>
+                      <td>
+                        {data?.info.type === "Ground" ? "Грунт" : "Водород"}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
           <div className="col-md-5 offset-md-1 d-flex flex-column justify-content-end">
             {scannedData.length ? (
-              <Graph
-                graphData={scannedData?.map((d) => ({
-                  primary: d.info.pointNumber,
-                  secondary: d.data
-                    .reduce(function (avg, value) {
-                      return avg + value.h2 / d.data.length;
-                    }, 0)
-                    .toFixed(2),
-                }))}
+              <Graph2
+                data={{
+                  labels: scannedData.map((d) => d.info.pointNumber),
+                  datasets: [
+                    {
+                      label: "H2",
+                      data: scannedData.map((d) =>
+                        d.data.reduce(function (avg, value) {
+                          return avg + parseFloat(value.h2) / d.data.length;
+                        }, 0)
+                      ),
+                    },
+                    {
+                      label: "pH",
+                      data: scannedData.map((d) =>
+                        d.data.reduce(function (avg, value) {
+                          return avg + parseFloat(value.ph) / d.data.length;
+                        }, 0)
+                      ),
+                    },
+                    {
+                      label: "T",
+                      data: scannedData.map((d) =>
+                        d.data.reduce(function (avg, value) {
+                          return avg + parseFloat(value.temp) / d.data.length;
+                        }, 0)
+                      ),
+                    },
+                    {
+                      label: "Влажность",
+                      data: scannedData.map((d) =>
+                        d.data.reduce(function (avg, value) {
+                          return avg + parseFloat(value.moi) / d.data.length;
+                        }, 0)
+                      ),
+                    },
+                  ],
+                }}
               />
             ) : (
               ""
             )}
 
             {scannedData[selectedPoint] ? (
-              <Graph
-                graphData={scannedData[selectedPoint].data.map((d) => ({
-                  primary: new Date(d.timestamp).toLocaleTimeString(),
-                  secondary: d.h2,
-                }))}
-              />
+              <div style={{ overflowX: "scroll" }}>
+                <div
+                  className="chart-container"
+                  style={{ position: "relative", width: "900px" }}
+                >
+                  <Graph2
+                    data={{
+                      labels: scannedData[selectedPoint].data.map((d) =>
+                        new Date(d.timestamp).toLocaleTimeString()
+                      ),
+                      datasets: [
+                        {
+                          label:
+                            scannedData[selectedPoint]?.type === "Hydro"
+                              ? "H2"
+                              : "pH",
+                          data:
+                            scannedData[selectedPoint]?.type === "Hydro"
+                              ? scannedData[selectedPoint].data.map((d) => d.h2)
+                              : scannedData[selectedPoint].data.map(
+                                  (d) => d.ph
+                                ),
+                        },
+                      ],
+                    }}
+                  />
+                  {/* <Graph
+                    graphData={scannedData[selectedPoint].data.map((d) => ({
+                      primary: new Date(d.timestamp).toLocaleTimeString(),
+                      secondary: d.h2,
+                    }))}
+                  /> */}
+                </div>
+              </div>
             ) : (
               ""
             )}

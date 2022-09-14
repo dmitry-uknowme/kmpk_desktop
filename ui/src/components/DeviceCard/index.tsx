@@ -59,19 +59,25 @@ const DeviceCard: React.FC<IDevice> = ({
     console.log("ddddis");
     socket.emit("UI:DEVICE_TRY_DISCONNECT", { address });
   };
-  console.log("dataaaaa", data);
+  // console.log("dataaaaa", data);
   useEffect(() => {
+    if (!isConnected) {
+      // tryConnectDevice();
+    }
     socket.on("UI:DEVICE_DATA_RECIEVE", (data) => {
-      console.log("daaaaa", data);
       if (data.address === address) {
         if (!isConnected) setIsConnected(true);
         setAwaitTime(0);
-        clearInterval(awaitTimer, awaitTimer.current);
+        clearInterval(awaitTimer.current);
         awaitTimer.current = setInterval(() => {
           setAwaitTime((state) => (state += 1));
         }, 1000);
 
-        setData((state) => ({ ...state, ...data.data }));
+        setData((state) => ({
+          ...state,
+          ...data.data,
+          pointNumber: data.pointNumber,
+        }));
       }
       // console.log("dataaaaa", data);
     });

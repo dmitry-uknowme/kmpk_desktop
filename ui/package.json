@@ -21,7 +21,9 @@
     "bootstrap-icons": "^1.9.1",
     "chart.js": "^3.9.1",
     "react-bootstrap": "^2.5.0",
+    "react-chartjs-2": "^4.3.1",
     "react-charts": "^3.0.0-beta.48",
+    "react-resizable": "^3.0.4",
     "react-router-dom": "^6.3.0",
     "react-toastify": "^9.0.8",
     "socket.io-client": "^4.5.2"
