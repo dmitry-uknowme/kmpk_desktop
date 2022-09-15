@@ -146,6 +146,7 @@ app
   .then(() => {
     // win.setAlwaysOnTop(true, "screen");
     win.maximize();
+    win.focus();
   });
 
 app.on("window-all-closed", () => {
