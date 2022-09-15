@@ -2,6 +2,7 @@
 import styles from "./index.module.sass";
 import io from "socket.io-client";
 import { useEffect, useRef, useState } from "react";
+import TimerIcon from "../../../public/timer_icon.png";
 
 const socket = io("ws://localhost:8081");
 
@@ -263,7 +264,7 @@ const DeviceCard: React.FC<IDevice> = ({
         <hr />
         <div className={styles.card__field}>
           <div className={`d-flex align-items-center ${styles.card__fieldKey}`}>
-            <img src="timer_icon.png" />
+            <img src={TimerIcon} />
             <span style={{ marginLeft: "0.5rem" }}>Время замера:</span>
           </div>
           <div className={styles.card__fieldValue}>

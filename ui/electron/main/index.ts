@@ -1,5 +1,6 @@
 import { app, BrowserWindow, shell, ipcMain } from "electron";
 import { release } from "os";
+import kill from "tree-kill";
 import { join } from "path";
 import nodeChildProcess from "child_process";
 import electronLocalshortcut from "electron-localshortcut";
@@ -31,6 +32,9 @@ const preload = join(__dirname, "../preload/index.js");
 const url = process.env.VITE_DEV_SERVER_URL;
 const indexHtml = join(ROOT_PATH.dist, "index.html");
 
+let workerScript;
+let serverScript;
+
 async function createWindow() {
   win = new BrowserWindow({
     autoHideMenuBar: true,
@@ -42,6 +46,7 @@ async function createWindow() {
     // maxHeight: 800,
     // resizable: false,
     titleBarStyle: "hidden",
+    // skipTaskbar: true,
     webPreferences: {
       preload,
       nodeIntegration: true,
@@ -97,35 +102,60 @@ app
   .whenReady()
   .then(createWindow)
   .then(() => {
-    let s = nodeChildProcess.spawn("cmd.exe", [
+    workerScript = nodeChildProcess.spawn("cmd.exe", [
       "/c",
       "start",
+      // "python C:app\\kmpk_desktop1\\worker\\main.py",
+      // "C:app\\kmpk_desktop1\\worker\\main.py",
       "C:app\\kmpk_desktop1\\RunWorker.bat",
     ]);
 
-    let script = nodeChildProcess.spawn("cmd.exe", [
+    serverScript = nodeChildProcess.spawn("cmd.exe", [
       "/c",
       `npx kill-port 8081 && cd C:\\app\\kmpk_desktop1\\server && npm run dev`,
     ]);
 
-    console.log("PID: " + script.pid);
+    console.log("[worker] PID: " + workerScript.pid);
 
-    script.stdout.on("data", (data) => {
-      console.log("stdout: " + data);
+    workerScript.stdout.on("data", (data) => {
+      console.log("[worker] stdout: " + data);
     });
 
-    script.stderr.on("data", (err) => {
-      console.log("stderr: " + err);
+    workerScript.stderr.on("data", (err) => {
+      console.log("[worker] stderr: " + err);
     });
 
-    script.on("exit", (code) => {
-      console.log("Exit Code: " + code);
+    workerScript.on("exit", (code) => {
+      console.log("[worker] Exit Code: " + code);
     });
+
+    console.log("[server] PID: " + serverScript.pid);
+
+    serverScript.stdout.on("data", (data) => {
+      console.log("[server] stdout: " + data);
+    });
+
+    serverScript.stderr.on("data", (err) => {
+      console.log("[server] stderr: " + err);
+    });
+
+    serverScript.on("exit", (code) => {
+      console.log("[server] Exit Code: " + code);
+    });
+  })
+  .then(() => {
+    // win.setAlwaysOnTop(true, "screen");
+    win.maximize();
   });
 
 app.on("window-all-closed", () => {
   win = null;
-  if (process.platform !== "darwin") app.quit();
+  if (process.platform !== "darwin") {
+    console.log("killing app...");
+    // kill(workerScript.pid);
+    // kill(serverScript.pid);
+    app.quit();
+  }
 });
 
 app.on("second-instance", () => {
@@ -156,7 +186,7 @@ ipcMain.handle("open-win", (event, arg) => {
     },
   });
 
-  childWindow.setAlwaysOnTop(true, "screen");
+  // childWindow.setAlwaysOnTop(true, "screen");
 
   if (app.isPackaged) {
     childWindow.loadFile(indexHtml, { hash: arg });

@@ -3,7 +3,9 @@ import DeviceCard from "@/components/DeviceCard";
 import { useState, useEffect, useRef } from "react";
 import { Offcanvas } from "react-bootstrap";
 import { Link, useSearchParams } from "react-router-dom";
-import io from "socket.io-client";
+import UserIcon from "../../../public/user_icon.png";
+import SettingsIcon from "../../../public/settings_icon.png";
+import ResultIcon from "../../../public/result_icon.png";
 
 const settings = window.api.getSettings();
 
@@ -84,7 +86,7 @@ const DashboardPage = () => {
                     >
                       <img
                         className="header__profile-img"
-                        src="user_icon.png"
+                        src={UserIcon}
                         alt="image"
                       />
 
@@ -104,10 +106,7 @@ const DashboardPage = () => {
                 className="header__settings d-flex"
                 onClick={() => setIsShowMenu(true)}
               >
-                <img
-                  className="header__settings-icon"
-                  src="settings_icon.png"
-                />
+                <img className="header__settings-icon" src={SettingsIcon} />
               </div>
               <div
                 className="header__settings-text"
@@ -141,25 +140,13 @@ const DashboardPage = () => {
         <footer className="footer" style={{ marginTop: "6rem" }}>
           <Link to="/stats">
             <button className="btn btn-primary footer__btn" type="button">
-              <img className="footer__btn-icon" src="result_icon.png" />
+              <img className="footer__btn-icon" src={ResultIcon} />
               <span style={{ marginLeft: "2rem" }}>
                 Результаты
                 <br /> измерения
               </span>
             </button>
           </Link>
-          {/* <Link to="/protocol">
-            <button
-              className="btn btn-primary footer__btn"
-              style={{ marginLeft: "1.5rem" }}
-            >
-              <img className="footer__btn-icon" src="protocol_icon.png" />
-              <span style={{ marginLeft: "2rem" }}>
-                Сформировать <br />
-                протокол
-              </span>
-            </button>
-          </Link> */}
         </footer>
       </div>
     </div>

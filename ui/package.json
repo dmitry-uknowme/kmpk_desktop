@@ -26,7 +26,8 @@
     "react-resizable": "^3.0.4",
     "react-router-dom": "^6.3.0",
     "react-toastify": "^9.0.8",
-    "socket.io-client": "^4.5.2"
+    "socket.io-client": "^4.5.2",
+    "tree-kill": "^1.2.2"
   },
   "devDependencies": {
     "@electron-toolkit/preload": "^1.0.2",

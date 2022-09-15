@@ -6,6 +6,7 @@ import { AxisOptions, Chart } from "react-charts";
 import Graph from "./Graph";
 import { toast } from "react-toastify";
 import Graph2 from "./Graph2";
+import ProcessIcon from "../../../public/process_icon.png";
 
 const Stats = () => {
   const [scannedDataDates, setScannedDataDates] = useState([]);
@@ -239,7 +240,7 @@ const Stats = () => {
                 toast.error("Недостаточно данных для расчета скорости коррозии")
               }
             >
-              <img className="footer__btn-icon" src="process_icon.png" />
+              <img className="footer__btn-icon" src={ProcessIcon} />
               <span style={{ marginLeft: "2rem" }}>
                 Расчитать скорость <br />
                 коррозии
