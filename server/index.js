@@ -42,6 +42,7 @@ io.on("connection", (socket) => {
   // });
 
   socket.on("UI:DEVICE_TRY_CONNECT", (data) => {
+    console.log("try connect", JSON.stringify(data));
     socket.broadcast.emit("WORKER:DEVICE_TRY_CONNECT", data);
   });
 
@@ -50,6 +51,8 @@ io.on("connection", (socket) => {
   });
 
   socket.on("WORKER:DEVICE_CONNECTED", (data) => {
+    //console.log("connected", data, JSON.parse(data));
+    data = JSON.parse(data);
     pointNumber += 1;
     const dp = devices.find((d) => d.address === data.address);
     dp.point_number = pointNumber;

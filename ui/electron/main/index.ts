@@ -101,48 +101,48 @@ async function createWindow() {
 app
   .whenReady()
   .then(createWindow)
-  .then(() => {
-    workerScript = nodeChildProcess.spawn("cmd.exe", [
-      "/c",
-      "start",
-      // "python C:app\\kmpk_desktop1\\worker\\main.py",
-      // "C:app\\kmpk_desktop1\\worker\\main.py",
-      "C:app\\kmpk_desktop1\\RunWorker.bat",
-    ]);
+  // .then(() => {
+  //   workerScript = nodeChildProcess.spawn("cmd.exe", [
+  //     "/c",
+  //     "start",
+  //     // "python C:app\\kmpk_desktop1\\worker\\main.py",
+  //     // "C:app\\kmpk_desktop1\\worker\\main.py",
+  //     "C:app\\kmpk_desktop1\\RunWorker.bat",
+  //   ]);
 
-    serverScript = nodeChildProcess.spawn("cmd.exe", [
-      "/c",
-      `npx kill-port 8081 && cd C:\\app\\kmpk_desktop1\\server && npm run dev`,
-    ]);
+  //   serverScript = nodeChildProcess.spawn("cmd.exe", [
+  //     "/c",
+  //     `npx kill-port 8081 && cd C:\\app\\kmpk_desktop1\\server && npm run dev`,
+  //   ]);
 
-    console.log("[worker] PID: " + workerScript.pid);
+  //   console.log("[worker] PID: " + workerScript.pid);
 
-    workerScript.stdout.on("data", (data) => {
-      console.log("[worker] stdout: " + data);
-    });
+  //   workerScript.stdout.on("data", (data) => {
+  //     console.log("[worker] stdout: " + data);
+  //   });
 
-    workerScript.stderr.on("data", (err) => {
-      console.log("[worker] stderr: " + err);
-    });
+  //   workerScript.stderr.on("data", (err) => {
+  //     console.log("[worker] stderr: " + err);
+  //   });
 
-    workerScript.on("exit", (code) => {
-      console.log("[worker] Exit Code: " + code);
-    });
+  //   workerScript.on("exit", (code) => {
+  //     console.log("[worker] Exit Code: " + code);
+  //   });
 
-    console.log("[server] PID: " + serverScript.pid);
+  //   console.log("[server] PID: " + serverScript.pid);
 
-    serverScript.stdout.on("data", (data) => {
-      console.log("[server] stdout: " + data);
-    });
+  //   serverScript.stdout.on("data", (data) => {
+  //     console.log("[server] stdout: " + data);
+  //   });
 
-    serverScript.stderr.on("data", (err) => {
-      console.log("[server] stderr: " + err);
-    });
+  //   serverScript.stderr.on("data", (err) => {
+  //     console.log("[server] stderr: " + err);
+  //   });
 
-    serverScript.on("exit", (code) => {
-      console.log("[server] Exit Code: " + code);
-    });
-  })
+  //   serverScript.on("exit", (code) => {
+  //     console.log("[server] Exit Code: " + code);
+  //   });
+  // })
   .then(() => {
     // win.setAlwaysOnTop(true, "screen");
     win.maximize();
