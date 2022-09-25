@@ -71,8 +71,9 @@ namespace QuickBlueToothLE
 
             // Start the watcher.
             deviceWatcher.Start();
-            //TryDeviceConnect(devicesAddresses[1]);
-            //TryDeviceConnect(devicesAddresses[0]);
+            Console.WriteLine("da");
+            TryDeviceConnect(devicesAddresses[1]);
+            TryDeviceConnect(devicesAddresses[0]);
             Console.ReadKey();
             deviceWatcher.Stop();
         }
@@ -94,20 +95,12 @@ namespace QuickBlueToothLE
         {
             while (true)
             {
-
-                if (device == null)
-                {
-                    Console.WriteLine("Sleep ");
-                    Thread.Sleep(200);
-                }
-                else
-                {
-                    Console.WriteLine("No Sleep " + device.Id);
+                    //Console.WriteLine("No Sleep " + device.Id);
                     Console.WriteLine("Press Any to pair ");
                     //Console.ReadKey();
                     BluetoothLEDevice bluetoothLeDevice = await BluetoothLEDevice.FromBluetoothAddressAsync(ConvertMacAddressToInt(address));
                     Console.WriteLine("Attempting to pair with device");
-                    //Console.WriteLine("dd " + bluetoothLeDevice.DeviceId.ToString());
+                    Console.WriteLine("dd " + bluetoothLeDevice.DeviceId.ToString());
                     GattDeviceServicesResult result = await bluetoothLeDevice.GetGattServicesAsync();
 
                     if (result.Status == GattCommunicationStatus.Success)
@@ -156,7 +149,6 @@ namespace QuickBlueToothLE
                     Console.WriteLine("Press Any Key to Exit application");
                     Console.ReadKey();
                     break;
-                }
             }
         } 
 
