@@ -14,16 +14,38 @@ using Windows.Devices.Bluetooth.GenericAttributeProfile;
 using Windows.Devices.Enumeration;
 using Windows.Devices.Radios;
 using Windows.Storage.Streams;
-using SocketIOClient;
 using System.Web.Script.Serialization;
+using System.Timers;
+using System.Net;
+using Timer = System.Timers.Timer;
+using nexus.core;
 
 namespace QuickBlueToothLE
 {
+    
+    class DeviceData
+    {
+        public dynamic T { get; set; }
+        public dynamic H2 { get; set; }
+        public dynamic PH { get; set; }
+        public dynamic Moi { get; set; }
+        public dynamic La { get; set; }
+        public dynamic Lo { get; set; }
+        public dynamic Ti { get; set; }
+    }
+
+    class DeviceDataRecievePayload
+    {
+        public string address { get; set; }
+        public DeviceData data { get; set; }
+        public TimeSpan timeConnected {get; set;}
+    }
+
     class DeviceTryConnectPayload
     {
         public string address { get; set; }
     }
-    class DeviceConnectedData
+    class DeviceConnectedPayload
     {
         public string address { get; set; }
     }
@@ -31,9 +53,12 @@ namespace QuickBlueToothLE
     class Program
     {
         static DeviceInformation device = null;
+        private static Dictionary<string, string> devicesDataString = new Dictionary<string, string>(); 
         private static List<BluetoothLEDevice> devices;
+        private static List<string> connectedDevicesAddresses = new List<string>();
+        private static Dictionary<string,DateTime> connectedDevicesTimes = new Dictionary<string,DateTime>();
         private static List<string> devicesAddresses = new List<string>();
-        public static readonly Guid SERVICE_ID = Guid.Parse("0000ffe0-0000-1000-8000-00805f9b34fb");
+        public static readonly Guid SERVICE_UUID = Guid.Parse("0000ffe0-0000-1000-8000-00805f9b34fb");
         private static readonly SocketIO socketIOClient = new SocketIO("http://localhost:8081/");
 
         static async Task Main(string[] args)
@@ -50,7 +75,15 @@ namespace QuickBlueToothLE
                 TryDeviceConnect(address);
             });
 
-           
+            socketIOClient.On("WORKER:DEVICE_TRY_DISCONNECT", async(payload) => {
+                DeviceTryConnectPayload deviceTryConnectPayload = payload.GetValue<DeviceTryConnectPayload>();
+                string address = deviceTryConnectPayload.address;
+                connectedDevicesAddresses.Remove(address);
+                string deviceDisconnectedJson = JsonSerializer.Serialize(new DeviceConnectedPayload { address = address });
+                await socketIOClient.EmitAsync("WORKER:DEVICE_DISCONNECTED", deviceDisconnectedJson);
+            });
+
+
             // Query for extra properties you want returned
             string[] requestedProperties = { "System.Devices.Aep.DeviceAddress", "System.Devices.Aep.IsConnected" };
 
@@ -113,14 +146,16 @@ namespace QuickBlueToothLE
                     if (result.Status == GattCommunicationStatus.Success)
                     {
                         Console.WriteLine("Pairing succeeded");
-                        string deviceConnectedJson = JsonSerializer.Serialize(new DeviceConnectedData { address = address });
-                        Console.WriteLine("JSON " + deviceConnectedJson);
+
+                        connectedDevicesAddresses.Add(address);
+                        DateTime connectionStartTime = DateTime.Now;
+                        connectedDevicesTimes[address] = connectionStartTime;
+                        string deviceConnectedJson = JsonSerializer.Serialize(new DeviceConnectedPayload { address = address });
                         await socketIOClient.EmitAsync("WORKER:DEVICE_CONNECTED", deviceConnectedJson);
-                        /*await socketIOClient.EmitAsync("WORKER:DEVICE_CONNECTED", $@"{{'address': '{address}'}}");*/
                         var services = result.Services;
                         foreach (var service in services)
                         {
-                            if (service.Uuid.Equals(SERVICE_ID))
+                            if (service.Uuid.Equals(SERVICE_UUID))
                             {
                                 Console.WriteLine("Found service");
                                 GattCharacteristicsResult charactiristicResult = await service.GetCharacteristicsAsync();
@@ -160,11 +195,18 @@ namespace QuickBlueToothLE
             }
         } 
 
-        private static void Characteristic_ValueChanged(GattCharacteristic sender, GattValueChangedEventArgs args)
+        private static async void Characteristic_ValueChanged(GattCharacteristic sender, GattValueChangedEventArgs args)
         {
+            
             //string convertedAddress = ConvertMacAddressToString(sender.Service.Device.BluetoothAddress);
             string convertedAddress = ConvertMacAddressToString(sender.Service.Device.BluetoothAddress);
-            string dataStr = "";
+
+            if (!connectedDevicesAddresses.Contains(convertedAddress))
+            {
+                return;
+            }
+
+                string dataStr = "";
             //sender.Service.TryDispose();
             try
             {
@@ -177,31 +219,39 @@ namespace QuickBlueToothLE
                     partStr += (char) reader.ReadByte();
                     i++;
                 }
-                dataStr += partStr;
+                    string str = devicesDataString.Get(convertedAddress) + partStr;
+                    devicesDataString[convertedAddress] = str;
 
-                Console.WriteLine("Data " + JsonSerializer.Serialize(partStr) + " From device " + convertedAddress);
 
                 if (partStr.Contains("Ti"))
                 {
-                    var dataArray = dataStr.Split(',');
-                    Console.WriteLine("Data " + JsonSerializer.Serialize(dataStr) +  " From device " + convertedAddress);
+                    var dataArray = devicesDataString[convertedAddress].Split(',');
 
-                    /* for (int k = 0; k < dataArray.Length; k++)
-                     {
-                         Console.WriteLine("Key: " + dataArray[k].Split('=')[0] + " Value: " + dataArray[k].Split('=')[1]);
-                        *//* string key = dataArray[k].Split('=')[0];
-                         string value = dataArray[k].Split('=')[1];
-                         dict.Add(key, value);*//*
-                     }*/
-                    //Console.WriteLine("From device " + sender.Service.Session.DeviceId.Id.ToString());
-                    //Console.WriteLine("Data " + + " From device " + ConvertMacAddressToString(sender.Service.Device.BluetoothAddress));
-                    //string jsonString = JsonSerializer.Serialize(dict);
-                    //Console.WriteLine("Data " + dict +  " From device " + sender.Service.Session.DeviceId.Id.ToString());
-                    dataStr = "";
+                    //dataArray.ToDictionary<string, string>(x => x.Split('=')[0], x => x.Split('=')[1]);
+                    //Console.WriteLine("Arr " + JsonSerializer.Serialize(dataArray));
+                    for (int k = 0; k < dataArray.Length; k++)
+                    {
+                        string key = dataArray[k].Split('=')[0];
+                        string value = dataArray[k].Split('=')[1];
+                        dict[key.Replace("\n", "").Trim()] = value.Replace("\r", "").Replace("\n", "").Replace("+", "").Replace("ppm","").Trim();
+                    }
+                    DeviceData deviceData = new DeviceData() {
+                        T = dict["T"],
+                        H2 = dict["H2"],
+                        PH = dict["PH"].Split(' ')[0],
+                        Moi = dict["Moi"].Split(' ')[0],
+                        La = dict["La"],
+                        Lo = dict["Lo"],
+                        Ti = dict["Ti"],
+                    };
+                    
+                    DateTime connectionStartTime = connectedDevicesTimes[convertedAddress];
+                    string deviceDataRecieveJson = JsonSerializer.Serialize(new DeviceDataRecievePayload() { address=convertedAddress, data= deviceData, timeConnected=connectionStartTime - DateTime.Now });
+                     
+                    Console.WriteLine("Data " + deviceDataRecieveJson + " From device " + convertedAddress);
+                    await socketIOClient.EmitAsync("WORKER:DEVICE_DATA_RECIEVE", deviceDataRecieveJson);
+                    devicesDataString[convertedAddress] = "";
                 }
-                
-                //Console.WriteLine("From device " + sender.Service.Session.DeviceId.Id.ToString());
-                //Console.WriteLine("Data " + + " From device " + ConvertMacAddressToString(sender.Service.Device.BluetoothAddress));
             }
             catch (Exception e) {
                 Console.WriteLine("Unable to parse " + e.ToString());

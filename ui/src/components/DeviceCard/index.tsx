@@ -58,7 +58,6 @@ const DeviceCard: React.FC<IDevice> = ({
   };
 
   const tryDisconnectDevice = () => {
-    console.log("ddddis");
     socket.emit("UI:DEVICE_TRY_DISCONNECT", { address });
   };
   // console.log("dataaaaa", data);
@@ -92,6 +91,7 @@ const DeviceCard: React.FC<IDevice> = ({
       }
     });
     socket.on("UI:DEVICE_DISCONNECTED", (data) => {
+      console.log("DISSS", data);
       if (data.address === address) {
         setIsConnected(false);
       }
@@ -164,7 +164,7 @@ const DeviceCard: React.FC<IDevice> = ({
                   <input
                     className="form-control"
                     style={{ width: 40, height: 26, marginRight: "0.5rem" }}
-                    value={data?.h2 || ""}
+                    value={data?.H2 || ""}
                     disabled
                   />
                   <span style={{ fontSize: "0.825rem", color: "#868686" }}>
@@ -182,7 +182,7 @@ const DeviceCard: React.FC<IDevice> = ({
                     <input
                       className="form-control"
                       style={{ height: 26, fontSize: "0.8rem" }}
-                      value={data?.Lat === "" ? "Нет сигнала" : data?.Lat}
+                      value={data?.La === "" ? "Нет сигнала" : data?.Lat}
                       disabled
                     />
                     <span
@@ -199,7 +199,7 @@ const DeviceCard: React.FC<IDevice> = ({
                     <input
                       className="form-control"
                       style={{ height: 26, fontSize: "0.8rem" }}
-                      value={data?.Long === "" ? "Нет сигнала" : data?.Long}
+                      value={data?.Lo === "" ? "Нет сигнала" : data?.Long}
                       disabled
                     />
                     <span
@@ -225,7 +225,7 @@ const DeviceCard: React.FC<IDevice> = ({
                   <input
                     className="form-control"
                     style={{ width: 60, height: 26, marginRight: "0.5rem" }}
-                    value={data?.ph || ""}
+                    value={data?.PH || ""}
                     disabled
                   />
                 </div>
@@ -239,7 +239,7 @@ const DeviceCard: React.FC<IDevice> = ({
                   <input
                     className="form-control"
                     style={{ width: 80, height: 26, marginRight: "0.5rem" }}
-                    value={data?.temp || ""}
+                    value={data?.T || ""}
                     disabled
                   />
                 </div>
@@ -253,7 +253,7 @@ const DeviceCard: React.FC<IDevice> = ({
                   <input
                     className="form-control"
                     style={{ width: 80, height: 26, marginRight: "0.5rem" }}
-                    value={data?.moi || ""}
+                    value={data?.Moi || ""}
                     disabled
                   />
                 </div>

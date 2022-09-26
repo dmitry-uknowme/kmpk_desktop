@@ -62,13 +62,15 @@ io.on("connection", (socket) => {
   });
 
   socket.on("WORKER:DEVICE_DISCONNECTED", (data) => {
+    data = JSON.parse(data);
     socket.broadcast.emit("UI:DEVICE_DISCONNECTED", data);
   });
 
   socket.on("WORKER:DEVICE_DATA_RECIEVE", async (data) => {
-    // const pointNumber = devices.find(
-    //   (d) => d.address === data.address
-    // ).point_number;
+    data = JSON.parse(data);
+    const pointNumber = devices.find(
+      (d) => d.address === data.address
+    ).point_number;
     const address = data.address;
 
     const type = devices.find((device) => device.address === address).type;
