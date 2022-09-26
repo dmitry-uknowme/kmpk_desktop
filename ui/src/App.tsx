@@ -1,9 +1,18 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+// @ts-nocheck
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Link,
+  useNavigate,
+} from "react-router-dom";
 import DashboardPage from "./pages/Dashboard";
 import StartPage from "./pages/Start";
 import StatsPage from "./pages/Stats";
 import ProtocolPage from "./pages/Protocol";
 import { ToastContainer, toast } from "react-toastify";
+import { useEffect } from "react";
+import CustomRoutes from "./components/Routes";
 
 const App: React.FC = () => {
   return (
@@ -26,12 +35,10 @@ const App: React.FC = () => {
         pauseOnHover
       />
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<StartPage />}></Route>
-          <Route path="/dashboard" element={<DashboardPage />}></Route>
-          <Route path="/stats" element={<StatsPage />}></Route>
-          <Route path="/protocol" element={<ProtocolPage />}></Route>
-        </Routes>
+        <CustomRoutes />
+        {/* <Link to="/">
+          <button className="btn">На главную</button>
+        </Link> */}
       </BrowserRouter>
     </div>
   );

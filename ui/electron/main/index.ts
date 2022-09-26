@@ -1,5 +1,6 @@
 import { app, BrowserWindow, shell, ipcMain } from "electron";
 import { release } from "os";
+import kill from "tree-kill";
 import { join } from "path";
 import nodeChildProcess from "child_process";
 import electronLocalshortcut from "electron-localshortcut";
@@ -31,6 +32,9 @@ const preload = join(__dirname, "../preload/index.js");
 const url = process.env.VITE_DEV_SERVER_URL;
 const indexHtml = join(ROOT_PATH.dist, "index.html");
 
+let workerScript;
+let serverScript;
+
 async function createWindow() {
   win = new BrowserWindow({
     autoHideMenuBar: true,
@@ -42,6 +46,7 @@ async function createWindow() {
     // maxHeight: 800,
     // resizable: false,
     titleBarStyle: "hidden",
+    // skipTaskbar: true,
     webPreferences: {
       preload,
       nodeIntegration: true,
@@ -49,7 +54,7 @@ async function createWindow() {
     },
   });
 
-  // win.setAlwaysOnTop(true, "screen");
+  //win.setAlwaysOnTop(true, "screen");
 
   electronLocalshortcut.register(win, "F2", () => {
     let script = nodeChildProcess.spawn("cmd.exe", [
@@ -93,11 +98,65 @@ async function createWindow() {
   });
 }
 
-app.whenReady().then(createWindow);
+app
+  .whenReady()
+  .then(createWindow)
+  .then(() => {
+    serverScript = nodeChildProcess.spawn("cmd.exe", [
+      "/c",
+      `npx kill-port 8081 && cd C:\\app\\kmpk_desktop1\\server && npm run dev`,
+    ]);
+
+    console.log("[server] PID: " + serverScript.pid);
+
+    serverScript.stdout.on("data", (data) => {
+      console.log("[server] stdout: " + data);
+    });
+
+    serverScript.stderr.on("data", (err) => {
+      console.log("[server] stderr: " + err);
+    });
+
+    serverScript.on("exit", (code) => {
+      console.log("[server] Exit Code: " + code);
+    });
+  })
+  .then(() => {
+    setTimeout(() => {
+      workerScript = nodeChildProcess.spawn("cmd.exe", [
+        "/c",
+        "start",
+        "C:\\app\\kmpk_desktop1\\worker2\\bin\\Debug\\BluetoothWorker.exe",
+      ]);
+
+      console.log("[worker] PID: " + workerScript.pid);
+
+      workerScript.stdout.on("data", (data) => {
+        console.log("[worker] stdout: " + data);
+      });
+
+      workerScript.stderr.on("data", (err) => {
+        console.log("[worker] stderr: " + err);
+      });
+
+      workerScript.on("exit", (code) => {
+        console.log("[worker] Exit Code: " + code);
+      });
+    }, 3000);
+
+    // win.setAlwaysOnTop(true, "screen");
+    win.maximize();
+    win.focus();
+  });
 
 app.on("window-all-closed", () => {
   win = null;
-  if (process.platform !== "darwin") app.quit();
+  if (process.platform !== "darwin") {
+    console.log("killing app...");
+    // kill(workerScript.pid);
+    // kill(serverScript.pid);
+    app.quit();
+  }
 });
 
 app.on("second-instance", () => {

@@ -193,7 +193,7 @@ import { electronAPI } from "@electron-toolkit/preload";
 
 // const APP_DIR = "E:\\Projects\\app";
 // const APP_DIR = "/home/dmitry/projects/kmpk_desktop";
-const APP_DIR = "C:\\app\\kmpk_desktop";
+const APP_DIR = "C:\\app\\kmpk_desktop1";
 
 const api = {
   test: (callback: any) => {

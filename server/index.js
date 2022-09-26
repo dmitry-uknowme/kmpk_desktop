@@ -17,7 +17,7 @@ app.use(cors({ origin: "*", methods: ["GET", "POST"] }));
 
 let pointNumber = 0;
 
-const APP_DIR = "C:\\app\\kmpk_desktop";
+const APP_DIR = "C:\\app\\kmpk_desktop1";
 // const APP_DIR = "/home/dmitry/projects/kmpk_desktop";
 
 let devices = JSON.parse(
@@ -42,6 +42,7 @@ io.on("connection", (socket) => {
   // });
 
   socket.on("UI:DEVICE_TRY_CONNECT", (data) => {
+    console.log("try connect", JSON.stringify(data));
     socket.broadcast.emit("WORKER:DEVICE_TRY_CONNECT", data);
   });
 
@@ -50,23 +51,26 @@ io.on("connection", (socket) => {
   });
 
   socket.on("WORKER:DEVICE_CONNECTED", (data) => {
+    //console.log("connected", data, JSON.parse(data));
+    data = JSON.parse(data);
     pointNumber += 1;
-    console.log("pointt", pointNumber);
     const dp = devices.find((d) => d.address === data.address);
-    console.log("dpppp", dp);
     dp.point_number = pointNumber;
     devices = [...devices.filter((d) => d.address !== data.address), dp];
 
-    socket.emit("UI:DEVICE_CONNECTED", { ...data, pointNumber });
+    socket.broadcast.emit("UI:DEVICE_CONNECTED", { ...data, pointNumber });
   });
 
   socket.on("WORKER:DEVICE_DISCONNECTED", (data) => {
-    socket.emit("UI:DEVICE_DISCONNECTED", data);
+    data = JSON.parse(data);
+    socket.broadcast.emit("UI:DEVICE_DISCONNECTED", data);
   });
 
   socket.on("WORKER:DEVICE_DATA_RECIEVE", async (data) => {
-    const pointNumber =
-      devices.find((d) => d.address === data.address).point_number || 1;
+    data = JSON.parse(data);
+    const pointNumber = devices.find(
+      (d) => d.address === data.address
+    ).point_number;
     const address = data.address;
 
     const type = devices.find((device) => device.address === address).type;
@@ -96,7 +100,7 @@ io.on("connection", (socket) => {
               address,
               type,
               pointNumber,
-              start_time: new Date().getTime(),
+              start_time: new Date().toLocaleTimeString(),
               end_time: null,
             },
             data: [],
@@ -117,7 +121,7 @@ io.on("connection", (socket) => {
         { ...data.data, timestamp: new Date().getTime() },
       ];
       const newData = oldData;
-
+      // console.log("ddddd", newData);
       await fsPromises.writeFile(
         `../data/${dateDirName}/${pointNumber}[${convertAddress(
           address
@@ -125,7 +129,7 @@ io.on("connection", (socket) => {
         JSON.stringify(newData, null, 2)
       );
 
-      socket.emit("UI:DEVICE_DATA_RECIEVE", { ...data, pointNumber });
+      socket.broadcast.emit("UI:DEVICE_DATA_RECIEVE", { ...data, pointNumber });
     } catch (e) {
       console.log("unable to write file", e);
     }
@@ -147,7 +151,6 @@ app.get("/getScannedData", (req, res) => {
     //  for (let i)
     files
       ?.filter((f) => f !== "info.json")
-      ?.sort((a, b) => (parseInt(b) > parseInt(a) ? -1 : 1))
       ?.map((file) =>
         data.push(
           JSON.parse(

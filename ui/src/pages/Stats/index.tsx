@@ -1,9 +1,12 @@
+// @ts-nocheck
 import { useState, useEffect, useMemo } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
 import { AxisOptions, Chart } from "react-charts";
 import Graph from "./Graph";
 import { toast } from "react-toastify";
+import Graph2 from "./Graph2";
+import ProcessIcon from "../../../public/process_icon.png";
 
 const Stats = () => {
   const [scannedDataDates, setScannedDataDates] = useState([]);
@@ -142,24 +145,45 @@ const Stats = () => {
           </div>
           <div className="col-md-5 offset-md-1 d-flex flex-column justify-content-end">
             {scannedData.length ? (
-              <div style={{ overflowX: "scroll" }}>
-                <div
-                  className="chart-container"
-                  style={{ position: "relative", width: "900px" }}
-                >
-                  <Graph
-                    graphData={scannedData?.map((d) => ({
-                      primary: d.info.pointNumber,
-                      secondary: d.data
-                        .filter((a) => a.type === "Hydrogen")
-                        .reduce(function (avg, value) {
-                          return avg + value.h2 / d.data.length;
+              <Graph2
+                data={{
+                  labels: scannedData.map((d) => d.info.pointNumber),
+                  datasets: [
+                    {
+                      label: "H2",
+                      data: scannedData.map((d) =>
+                        d.data.reduce(function (avg, value) {
+                          return avg + parseFloat(value.h2) / d.data.length;
                         }, 0)
-                        .toFixed(2),
-                    }))}
-                  />
-                </div>
-              </div>
+                      ),
+                    },
+                    {
+                      label: "pH",
+                      data: scannedData.map((d) =>
+                        d.data.reduce(function (avg, value) {
+                          return avg + parseFloat(value.ph) / d.data.length;
+                        }, 0)
+                      ),
+                    },
+                    {
+                      label: "T",
+                      data: scannedData.map((d) =>
+                        d.data.reduce(function (avg, value) {
+                          return avg + parseFloat(value.temp) / d.data.length;
+                        }, 0)
+                      ),
+                    },
+                    {
+                      label: "Влажность",
+                      data: scannedData.map((d) =>
+                        d.data.reduce(function (avg, value) {
+                          return avg + parseFloat(value.moi) / d.data.length;
+                        }, 0)
+                      ),
+                    },
+                  ],
+                }}
+              />
             ) : (
               ""
             )}
@@ -170,12 +194,33 @@ const Stats = () => {
                   className="chart-container"
                   style={{ position: "relative", width: "900px" }}
                 >
-                  <Graph
+                  <Graph2
+                    data={{
+                      labels: scannedData[selectedPoint].data.map((d) =>
+                        new Date(d.timestamp).toLocaleTimeString()
+                      ),
+                      datasets: [
+                        {
+                          label:
+                            scannedData[selectedPoint]?.type === "Hydro"
+                              ? "H2"
+                              : "pH",
+                          data:
+                            scannedData[selectedPoint]?.type === "Hydro"
+                              ? scannedData[selectedPoint].data.map((d) => d.h2)
+                              : scannedData[selectedPoint].data.map(
+                                  (d) => d.ph
+                                ),
+                        },
+                      ],
+                    }}
+                  />
+                  {/* <Graph
                     graphData={scannedData[selectedPoint].data.map((d) => ({
                       primary: new Date(d.timestamp).toLocaleTimeString(),
                       secondary: d.h2,
                     }))}
-                  />
+                  /> */}
                 </div>
               </div>
             ) : (
@@ -195,7 +240,7 @@ const Stats = () => {
                 toast.error("Недостаточно данных для расчета скорости коррозии")
               }
             >
-              <img className="footer__btn-icon" src="process_icon.png" />
+              <img className="footer__btn-icon" src={ProcessIcon} />
               <span style={{ marginLeft: "2rem" }}>
                 Расчитать скорость <br />
                 коррозии

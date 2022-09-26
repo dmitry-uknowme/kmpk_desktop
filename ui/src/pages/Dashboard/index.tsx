@@ -1,7 +1,11 @@
+// @ts-nocheck
 import DeviceCard from "@/components/DeviceCard";
 import { useState, useEffect, useRef } from "react";
 import { Offcanvas } from "react-bootstrap";
 import { Link, useSearchParams } from "react-router-dom";
+import UserIcon from "../../../public/user_icon.png";
+import SettingsIcon from "../../../public/settings_icon.png";
+import ResultIcon from "../../../public/result_icon.png";
 
 const settings = window.api.getSettings();
 
@@ -9,17 +13,6 @@ const DashboardPage = () => {
   const [search, setSearch] = useSearchParams();
   const [fullName, setFullName] = useState(search.get("full_name"));
   const [isShowMenu, setIsShowMenu] = useState<boolean>(false);
-  const [mode, setMode] = useState(0);
-
-  // useEffect(() => {
-  //   if (mode === 0) {
-  //     window.mode = 1;
-  //   }
-  // }, [mode]);
-
-  useEffect(() => {
-    window?.mode === 1 ? setMode(1) : null;
-  }, []);
 
   return (
     <div className="dashboard_page">
@@ -93,7 +86,7 @@ const DashboardPage = () => {
                     >
                       <img
                         className="header__profile-img"
-                        src="user_icon.png"
+                        src={UserIcon}
                         alt="image"
                       />
 
@@ -113,10 +106,7 @@ const DashboardPage = () => {
                 className="header__settings d-flex"
                 onClick={() => setIsShowMenu(true)}
               >
-                <img
-                  className="header__settings-icon"
-                  src="settings_icon.png"
-                />
+                <img className="header__settings-icon" src={SettingsIcon} />
               </div>
               <div
                 className="header__settings-text"
@@ -135,7 +125,6 @@ const DashboardPage = () => {
                   address={device.address}
                   type={device.type}
                   number={device.number}
-                  mode={mode}
                 />
               </div>
             ))}
@@ -151,46 +140,14 @@ const DashboardPage = () => {
         <footer className="footer" style={{ marginTop: "6rem" }}>
           <Link to="/stats">
             <button className="btn btn-primary footer__btn" type="button">
-              <img className="footer__btn-icon" src="result_icon.png" />
+              <img className="footer__btn-icon" src={ResultIcon} />
               <span style={{ marginLeft: "2rem" }}>
                 Результаты
                 <br /> измерения
               </span>
             </button>
           </Link>
-          {/* <Link to="/protocol">
-            <button
-              className="btn btn-primary footer__btn"
-              style={{ marginLeft: "1.5rem" }}
-            >
-              <img className="footer__btn-icon" src="protocol_icon.png" />
-              <span style={{ marginLeft: "2rem" }}>
-                Сформировать <br />
-                протокол
-              </span>
-            </button>
-          </Link> */}
         </footer>
-        <div
-          onClick={() =>
-            setMode((state) => {
-              console.log("chhh mmmm", state);
-
-              return state === 0 ? 1 : 0;
-            })
-          }
-          style={{
-            opacity: 0,
-            display: "block",
-            position: "absolute",
-            bottom: "0",
-            right: "0",
-            width: "20px",
-            height: "20px",
-          }}
-        >
-          кнопка
-        </div>
       </div>
     </div>
   );

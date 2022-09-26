@@ -1,7 +1,8 @@
+// @ts-nocheck
 import styles from "./index.module.sass";
 import io from "socket.io-client";
 import { useEffect, useRef, useState } from "react";
-import { toast } from "react-toastify";
+import TimerIcon from "../../../public/timer_icon.png";
 
 const socket = io("ws://localhost:8081");
 
@@ -35,40 +36,14 @@ const DeviceCard: React.FC<IDevice> = ({
   temp,
   type,
   pointNumber,
-  mode,
   // workingTime,
 }) => {
   const [data, setData] = useState<IDevice>();
   const [workingTime, setWorkingTime] = useState(0);
   const [isConnected, setIsConnected] = useState(false);
   const timerRef = useRef();
-  const modeTimerRef = useRef();
   const [awaitTime, setAwaitTime] = useState(0);
   const awaitTimer = useRef();
-  const [manualDisconnect, setManualDisconnect] = useState(false);
-
-  function getRandomFloat(min, max, decimals) {
-    const str = (Math.random() * (max - min) + min).toFixed(decimals);
-    return parseFloat(str);
-  }
-
-  const pseudoRandom = () => {
-    console.log("pssss");
-    const num = Math.random().toFixed(1);
-    console.log("nnnnnn", num);
-    if (
-      num === (0.3).toFixed(1) ||
-      num === (0.5).toFixed(1) ||
-      num === (0.7).toFixed(1) ||
-      num === (0.1).toFixed(1) ||
-      num === (0.2).toFixed(1) ||
-      num === (0.4).toFixed(1) ||
-      num === (0.9).toFixed(1)
-    ) {
-      return false;
-    }
-    return true;
-  };
 
   useEffect(() => {
     clearInterval(awaitTimer, awaitTimer.current);
@@ -79,63 +54,33 @@ const DeviceCard: React.FC<IDevice> = ({
   }, []);
 
   const tryConnectDevice = () => {
-    if (mode === 0) {
-      socket.emit("UI:DEVICE_TRY_CONNECT", { address });
-    } else {
-      // toast.info(`Запрос на подключение к устройству №${number} отправлен`);
-      // clearInterval(modeTimerRef.current);
-      clearInterval(modeTimerRef.current);
-      modeTimerRef.current = setInterval(() => {
-        // if (isConnected) {
-        // if (!manualDisconnect) {
-        //   setIsConnected(false);
-        // }
-        socket.emit("WORKER:DEVICE_DATA_RECIEVE", {
-          address,
-          data: {
-            temp: getRandomFloat(
-              data?.temp ? data?.temp : 22.5,
-              data?.temp ? data?.temp + 0.1 : 23,
-              1
-            ),
-            ph: getRandomFloat(5.5, 5.8, 2),
-            h2: getRandomFloat(0, 1, 2).toFixed(0),
-            moi: getRandomFloat(0, 1, 2),
-            Lat: pseudoRandom() ? "" : getRandomFloat(59.761062, 59.761395, 6),
-            Long: pseudoRandom() ? "" : getRandomFloat(30.352992, 30.352564, 6),
-            timestamp: new Date().getTime(),
-          },
-        });
-        // }
-      }, 3000 + getRandomFloat(500, 1000));
-
-      setManualDisconnect(false);
-      setTimeout(() => {
-        socket.emit("WORKER:DEVICE_CONNECTED", { address });
-      }, 3000 + getRandomFloat(500, 1000));
-    }
+    socket.emit("UI:DEVICE_TRY_CONNECT", { address });
   };
 
   const tryDisconnectDevice = () => {
-    if (mode === 0) {
-      socket.emit("UI:DEVICE_TRY_DISCONNECT", { address });
-    } else {
-      clearInterval(modeTimerRef.current);
-      setManualDisconnect(true);
-      socket.emit("WORKER:DEVICE_DISCONNECTED", { address });
-    }
+    socket.emit("UI:DEVICE_TRY_DISCONNECT", { address });
   };
+  // console.log("dataaaaa", data);
   useEffect(() => {
+    if (!isConnected) {
+      // tryConnectDevice();
+    }
     socket.on("UI:DEVICE_DATA_RECIEVE", (data) => {
       if (data.address === address) {
-        // if (!isConnected && mode !== 1) setIsConnected(true);
+        if (!isConnected) setIsConnected(true);
         setAwaitTime(0);
-        clearInterval(awaitTimer, awaitTimer.current);
+        clearInterval(awaitTimer.current);
         awaitTimer.current = setInterval(() => {
           setAwaitTime((state) => (state += 1));
         }, 1000);
-        setData((state) => ({ ...state, ...data.data }));
+
+        setData((state) => ({
+          ...state,
+          ...data.data,
+          pointNumber: data.pointNumber,
+        }));
       }
+      // console.log("dataaaaa", data);
     });
     socket.on("UI:DEVICE_CONNECTED", (data) => {
       console.log("connectd", data);
@@ -146,6 +91,7 @@ const DeviceCard: React.FC<IDevice> = ({
       }
     });
     socket.on("UI:DEVICE_DISCONNECTED", (data) => {
+      console.log("DISSS", data);
       if (data.address === address) {
         setIsConnected(false);
       }
@@ -154,15 +100,14 @@ const DeviceCard: React.FC<IDevice> = ({
     timerRef.current = setInterval(() => {
       setWorkingTime((state) => (state += 1));
     }, 1000);
-    // if (awaitTime > 30000) {
-    //   console.log("больше 30 сек нет данных");
-    //   tryConnectDevice();
-    // }
+    if (awaitTime > 30000) {
+      console.log("больше 30 сек нет данных");
+      tryConnectDevice();
+    }
     return () => clearInterval(timerRef.current);
   }, []);
 
   useEffect(() => {
-    // setIsConnected(true);
     setWorkingTime(0);
     clearInterval(timerRef.current);
     if (isConnected) {
@@ -173,55 +118,6 @@ const DeviceCard: React.FC<IDevice> = ({
     }
     return () => clearInterval(timerRef.current);
   }, [isConnected]);
-
-  const pause = (t: number) => {
-    return new Promise((resolve) =>
-      setTimeout(() => {
-        console.log();
-        resolve();
-      }, t)
-    );
-  };
-
-  useEffect(() => {
-    if (mode === 1) {
-      // if (isConnected) {
-
-      tryConnectDevice();
-      // }
-      clearInterval(modeTimerRef.current);
-      modeTimerRef.current = setInterval(() => {
-        // if (isConnected) {
-        // if (!manualDisconnect) {
-        //   setIsConnected(false);
-        // }
-        socket.emit("WORKER:DEVICE_DATA_RECIEVE", {
-          address,
-          data: {
-            temp: getRandomFloat(
-              data?.temp ? data?.temp : 22.5,
-              data?.temp ? data?.temp + 0.1 : 23,
-              1
-            ),
-            ph: getRandomFloat(5.5, 5.8, 2),
-            h2: getRandomFloat(0, 1, 2).toFixed(0),
-            moi: getRandomFloat(0, 1, 2),
-            Lat: pseudoRandom() ? "" : getRandomFloat(59.761062, 59.761395, 6),
-            Long: pseudoRandom() ? "" : getRandomFloat(30.352992, 30.352564, 6),
-            timestamp: new Date().getTime(),
-          },
-        });
-        // }
-      }, 3000 + getRandomFloat(500, 1000));
-    }
-    // return clearInterval(modeTimerRef.current);
-  }, [mode]);
-
-  // useEffect(() => {
-  //   if (mode === 1 && isConnected === true) {
-  //     setPointNumbers1((state) => [...state.map((p) => p++)]);
-  //   }
-  // }, [isConnected]);
 
   return (
     <div className={`card ${styles.deviceCard}`}>
@@ -268,7 +164,7 @@ const DeviceCard: React.FC<IDevice> = ({
                   <input
                     className="form-control"
                     style={{ width: 40, height: 26, marginRight: "0.5rem" }}
-                    value={data?.h2 || ""}
+                    value={data?.H2 || ""}
                     disabled
                   />
                   <span style={{ fontSize: "0.825rem", color: "#868686" }}>
@@ -286,7 +182,7 @@ const DeviceCard: React.FC<IDevice> = ({
                     <input
                       className="form-control"
                       style={{ height: 26, fontSize: "0.8rem" }}
-                      value={data?.Lat === "" ? "Нет сигнала" : data?.Lat}
+                      value={data?.La === "" ? "Нет сигнала" : data?.Lat}
                       disabled
                     />
                     <span
@@ -303,7 +199,7 @@ const DeviceCard: React.FC<IDevice> = ({
                     <input
                       className="form-control"
                       style={{ height: 26, fontSize: "0.8rem" }}
-                      value={data?.Long === "" ? "Нет сигнала" : data?.Long}
+                      value={data?.Lo === "" ? "Нет сигнала" : data?.Long}
                       disabled
                     />
                     <span
@@ -329,7 +225,7 @@ const DeviceCard: React.FC<IDevice> = ({
                   <input
                     className="form-control"
                     style={{ width: 60, height: 26, marginRight: "0.5rem" }}
-                    value={data?.ph || ""}
+                    value={data?.PH || ""}
                     disabled
                   />
                 </div>
@@ -343,7 +239,7 @@ const DeviceCard: React.FC<IDevice> = ({
                   <input
                     className="form-control"
                     style={{ width: 80, height: 26, marginRight: "0.5rem" }}
-                    value={data?.temp || ""}
+                    value={data?.T || ""}
                     disabled
                   />
                 </div>
@@ -357,7 +253,7 @@ const DeviceCard: React.FC<IDevice> = ({
                   <input
                     className="form-control"
                     style={{ width: 80, height: 26, marginRight: "0.5rem" }}
-                    value={data?.moi || ""}
+                    value={data?.Moi || ""}
                     disabled
                   />
                 </div>
@@ -368,7 +264,7 @@ const DeviceCard: React.FC<IDevice> = ({
         <hr />
         <div className={styles.card__field}>
           <div className={`d-flex align-items-center ${styles.card__fieldKey}`}>
-            <img src="timer_icon.png" />
+            <img src={TimerIcon} />
             <span style={{ marginLeft: "0.5rem" }}>Время замера:</span>
           </div>
           <div className={styles.card__fieldValue}>

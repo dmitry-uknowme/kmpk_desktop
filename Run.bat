@@ -1,1 +1,1 @@
-concurrently "cd C:\app\kmpk_desktop\ui && npm run dev" "npx kill-port 8081 && cd C:\app\kmpk_desktop\server && npm run dev"
+concurrently "cd C:\app\kmpk_desktop1\ui && npm run dev" "npx kill-port 8081 && cd C:\app\kmpk_desktop1\server && npm run dev" "start C:\app\kmpk_desktop1\RunWorker.bat"

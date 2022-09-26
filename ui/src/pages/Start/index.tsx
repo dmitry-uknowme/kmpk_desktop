@@ -1,5 +1,7 @@
+// @ts-nocheck
 import { useLayoutEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
+import IntroVideo from "../../../public/intro.mp4";
 
 if (window.isFirstRun === undefined) {
   window.isFirstRun = true;
@@ -48,7 +50,7 @@ const StartPage = () => {
             height: "100%",
           }}
         >
-          <source src="intro.mp4" type="video/mp4" />
+          <source src={IntroVideo} type="video/mp4" />
         </video>
       ) : (
         ""

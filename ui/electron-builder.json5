@@ -2,8 +2,8 @@
  * @see https://www.electron.build/configuration/configuration
  */
 {
-  appId: "YourAppID",
-  productName: "YourAppName",
+  appId: "KMPK_desktop",
+  productName: "KMPK_desktop",
   copyright: "Copyright © 2022 ${author}",
   asar: true,
   directories: {
@@ -18,7 +18,7 @@
         arch: ["x64"],
       },
     ],
-    artifactName: "${productName}-Windows-${version}-Setup.${ext}",
+    artifactName: "${productName}${version}-Setup.${ext}",
   },
   nsis: {
     oneClick: false,

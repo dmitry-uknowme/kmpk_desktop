@@ -26,13 +26,13 @@ code {
   background: url('../../../public/background.png');
 }
 
-.form-check-input:checked{
+.form-check-input:checked {
   background-color: #12DF5B;
   border-color: #12DF5B;
 }
 
 .logo {
-  background-image: linear-gradient(to right,#2CE9DC, #01A0E3);
+  background-image: linear-gradient(to right, #2CE9DC, #01A0E3);
   color: #fff;
   font-weight: 600;
 }
@@ -69,9 +69,11 @@ code {
   padding: 1rem 2rem;
 }
 
-.btn-primary {background: #00AAD4;}
+.btn-primary {
+  background: #00AAD4;
+}
 
-.signin__logo{
+.signin__logo {
   font-size: 1.5rem;
   padding: 0.5rem 1rem;
   border-radius: 0.2em;
@@ -83,13 +85,15 @@ table {
   border-radius: 1em
 }
 
-table td,th{
+table td,
+th {
   font-size: 0.8rem;
   /* font-size: 0.625rem; */
 }
 
 
-.dashboard_page,.stats_page {
+.dashboard_page,
+.stats_page {
   padding: 1.2rem;
 }
 
