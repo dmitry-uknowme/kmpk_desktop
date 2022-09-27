@@ -129,7 +129,7 @@ namespace QuickBlueToothLE
             while (true)
             {
                     //Console.WriteLine("No Sleep " + device.Id);
-                    Console.WriteLine("Press Any to pair " + address);
+                    //Console.WriteLine("Press Any to pair " + address);
                     //Console.ReadKey();
 
                     BluetoothLEDevice bluetoothLeDevice = await BluetoothLEDevice.FromBluetoothAddressAsync(ConvertMacAddressToInt(address));
@@ -139,7 +139,7 @@ namespace QuickBlueToothLE
                         return;
                     }
                     Console.WriteLine("Attempting to pair with device");
-                    Console.WriteLine("dd " + bluetoothLeDevice.DeviceId.ToString());
+                    //Console.WriteLine("dd " + bluetoothLeDevice.DeviceId.ToString());
                     GattDeviceServicesResult result = await bluetoothLeDevice.GetGattServicesAsync();
 
                     if (result.Status == GattCommunicationStatus.Success)
@@ -156,6 +156,7 @@ namespace QuickBlueToothLE
                         {
                             if (service.Uuid.Equals(SERVICE_UUID))
                             {
+                                service.Session.SessionStatusChanged += Service_SessionStatusChanged;
                                 Console.WriteLine("Found service");
                                 GattCharacteristicsResult charactiristicResult = await service.GetCharacteristicsAsync();
 
@@ -170,7 +171,7 @@ namespace QuickBlueToothLE
 
                                         if (properties.HasFlag(GattCharacteristicProperties.Notify))
                                         {
-                                            Console.WriteLine("Notify poroperty found");
+                                            Console.WriteLine("Notify property found");
                                             //characteristic.ReadClientCharacteristicConfigurationDescriptorAsync();
                                             GattCommunicationStatus status = await characteristic.WriteClientCharacteristicConfigurationDescriptorAsync(
                         GattClientCharacteristicConfigurationDescriptorValue.Notify);
@@ -193,6 +194,20 @@ namespace QuickBlueToothLE
             }
         } 
 
+        private static async void Service_SessionStatusChanged(GattSession gattSession, GattSessionStatusChangedEventArgs args)
+        {
+            BluetoothLEDevice bluetoothLeDevice = await BluetoothLEDevice.FromIdAsync(gattSession.DeviceId.Id);
+            Console.WriteLine("Status changed " + args.Status.ToString() + " args " + JsonSerializer.Serialize(args) + "d" + JsonSerializer.Serialize(bluetoothLeDevice));
+
+            string address = ConvertMacAddressToString(bluetoothLeDevice.BluetoothAddress);
+
+            if (args.Status == GattSessionStatus.Closed)
+            {
+                string deviceDisconnectedJson = JsonSerializer.Serialize(new DeviceConnectedPayload { address = address });
+                await socketIOClient.EmitAsync("WORKER:DEVICE_DISCONNECTED", deviceDisconnectedJson);
+            }
+        }
+
         private static async void Characteristic_ValueChanged(GattCharacteristic sender, GattValueChangedEventArgs args)
         {
             
@@ -201,11 +216,12 @@ namespace QuickBlueToothLE
 
             if (!connectedDevicesAddresses.Contains(convertedAddress))
             {
+                sender.Service.TryDispose();
                 return;
             }
 
                 string dataStr = "";
-            //sender.Service.TryDispose();
+            
             try
             {
                 var reader = DataReader.FromBuffer(args.CharacteristicValue);
@@ -219,11 +235,12 @@ namespace QuickBlueToothLE
                 }
                     string str = devicesDataString.Get(convertedAddress) + partStr;
                     devicesDataString[convertedAddress] = str;
+/*                    Console.WriteLine("Raw str " + partStr + " address " + convertedAddress);
+                    Console.WriteLine("Full str " + str + " address " + convertedAddress);*/
 
-
-                if (partStr.Contains("Ti"))
+                if (partStr.Contains("\r\n"))
                 {
-                    var dataArray = devicesDataString[convertedAddress].Split(',');
+                    string[] dataArray = devicesDataString[convertedAddress].Split(',');
 
                     //dataArray.ToDictionary<string, string>(x => x.Split('=')[0], x => x.Split('=')[1]);
                     //Console.WriteLine("Arr " + JsonSerializer.Serialize(dataArray));
@@ -231,8 +248,11 @@ namespace QuickBlueToothLE
                     {
                         string key = dataArray[k].Split('=')[0];
                         string value = dataArray[k].Split('=')[1];
-                        dict[key.Replace("\n", "").Trim()] = value.Replace("\r", "").Replace("\n", "").Replace("+", "").Replace("ppm","").Trim();
+                        dict[key.Replace("\n", "").Trim()] = value.Replace("\r", "").Replace("\n", "").Replace("+", "").Replace("ppm", "").Trim();
                     }
+
+                    //Console.WriteLine("Prev data " + JsonSerializer.Serialize(dict) + " From device " + convertedAddress);
+
                     DeviceData deviceData = new DeviceData() {
                         T = dict["T"],
                         H2 = dict["H2"],
@@ -252,7 +272,8 @@ namespace QuickBlueToothLE
                 }
             }
             catch (Exception e) {
-                Console.WriteLine("Unable to parse " + e.ToString());
+                Console.WriteLine("Unable to parse " + e.ToString() + " Address " + convertedAddress);
+                devicesDataString[convertedAddress] = "";
             }
         }
 
