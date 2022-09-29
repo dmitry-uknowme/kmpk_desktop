@@ -1,23 +1,13 @@
 ﻿using SocketIOClient;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
 using System.Text.Json;
-using System.Threading;
 using System.Threading.Tasks;
 using Windows.Devices.Bluetooth;
-using Windows.Devices.Bluetooth.Advertisement;
 using Windows.Devices.Bluetooth.GenericAttributeProfile;
 using Windows.Devices.Enumeration;
-using Windows.Devices.Radios;
 using Windows.Storage.Streams;
-using System.Web.Script.Serialization;
-using System.Timers;
-using System.Net;
-using Timer = System.Timers.Timer;
 using nexus.core;
 
 namespace QuickBlueToothLE
@@ -33,6 +23,13 @@ namespace QuickBlueToothLE
         public dynamic Lo { get; set; }
         public dynamic Ti { get; set; }
     }
+
+    enum DeviceType    
+    {
+        Hydrogen = 0,
+        Ground = 1,
+    }
+
 
     class DeviceDataRecievePayload
     {
@@ -82,8 +79,7 @@ namespace QuickBlueToothLE
                 string deviceDisconnectedJson = JsonSerializer.Serialize(new DeviceConnectedPayload { address = address });
                 await socketIOClient.EmitAsync("WORKER:DEVICE_DISCONNECTED", deviceDisconnectedJson);
             });
-
-
+                
             // Query for extra properties you want returned
             string[] requestedProperties = { "System.Devices.Aep.DeviceAddress", "System.Devices.Aep.IsConnected" };
 
@@ -104,10 +100,7 @@ namespace QuickBlueToothLE
 
             // Start the watcher.
             deviceWatcher.Start();
-            Console.WriteLine("da");
-            //TryDeviceConnect(devicesAddresses[1]);
-            //TryDeviceConnect(devicesAddresses[0]);
-            Console.ReadKey();
+            Console.ReadLine();
             deviceWatcher.Stop();
         }
 
@@ -128,69 +121,65 @@ namespace QuickBlueToothLE
         {
             while (true)
             {
-                    //Console.WriteLine("No Sleep " + device.Id);
-                    //Console.WriteLine("Press Any to pair " + address);
-                    //Console.ReadKey();
+                BluetoothLEDevice bluetoothLeDevice = await GetBluetoothDeviceByAddress(address);
+                if (bluetoothLeDevice == null)
+                {
+                    Console.WriteLine("No device found with address " + address);
+                    return;
+                }
+                Console.WriteLine("Attempting to pair device with address" + address);
+                   
+                GattDeviceServicesResult result = await bluetoothLeDevice.GetGattServicesAsync();
 
-                    BluetoothLEDevice bluetoothLeDevice = await BluetoothLEDevice.FromBluetoothAddressAsync(ConvertMacAddressToInt(address));
-                    if (bluetoothLeDevice == null)
+                if (result.Status == GattCommunicationStatus.Success)
+                {
+                    Console.WriteLine("Pairing succeeded");
+
+                    connectedDevicesAddresses.Add(address);
+                    DateTime connectionStartTime = DateTime.Now;
+                    connectedDevicesTimes[address] = connectionStartTime;
+                    string deviceConnectedJson = JsonSerializer.Serialize(new DeviceConnectedPayload { address = address });
+                    await socketIOClient.EmitAsync("WORKER:DEVICE_CONNECTED", deviceConnectedJson);
+                    var services = result.Services;
+                    foreach (var service in services)
                     {
-                        Console.WriteLine("No device found with address " + address);
-                        return;
-                    }
-                    Console.WriteLine("Attempting to pair with device");
-                    //Console.WriteLine("dd " + bluetoothLeDevice.DeviceId.ToString());
-                    GattDeviceServicesResult result = await bluetoothLeDevice.GetGattServicesAsync();
-
-                    if (result.Status == GattCommunicationStatus.Success)
-                    {
-                        Console.WriteLine("Pairing succeeded");
-
-                        connectedDevicesAddresses.Add(address);
-                        DateTime connectionStartTime = DateTime.Now;
-                        connectedDevicesTimes[address] = connectionStartTime;
-                        string deviceConnectedJson = JsonSerializer.Serialize(new DeviceConnectedPayload { address = address });
-                        await socketIOClient.EmitAsync("WORKER:DEVICE_CONNECTED", deviceConnectedJson);
-                        var services = result.Services;
-                        foreach (var service in services)
+                        if (service.Uuid.Equals(SERVICE_UUID))
                         {
-                            if (service.Uuid.Equals(SERVICE_UUID))
+                            service.Session.SessionStatusChanged += Service_SessionStatusChanged;
+                            Console.WriteLine("Found service");
+                            GattCharacteristicsResult charactiristicResult = await service.GetCharacteristicsAsync();
+
+                            if (charactiristicResult.Status == GattCommunicationStatus.Success)
                             {
-                                service.Session.SessionStatusChanged += Service_SessionStatusChanged;
-                                Console.WriteLine("Found service");
-                                GattCharacteristicsResult charactiristicResult = await service.GetCharacteristicsAsync();
-
-                                if (charactiristicResult.Status == GattCommunicationStatus.Success)
+                                var characteristics = charactiristicResult.Characteristics;
+                                foreach (var characteristic in characteristics)
                                 {
-                                    var characteristics = charactiristicResult.Characteristics;
-                                    foreach (var characteristic in characteristics)
+                                    Console.WriteLine("---------------");
+                                    Console.WriteLine(characteristic);
+                                    GattCharacteristicProperties properties = characteristic.CharacteristicProperties;
+
+                                    if (properties.HasFlag(GattCharacteristicProperties.Notify))
                                     {
-                                        Console.WriteLine("---------------");
-                                        Console.WriteLine(characteristic);
-                                        GattCharacteristicProperties properties = characteristic.CharacteristicProperties;
-
-                                        if (properties.HasFlag(GattCharacteristicProperties.Notify))
+                                        Console.WriteLine("Notify property found");
+                                        //characteristic.ReadClientCharacteristicConfigurationDescriptorAsync();
+                                        GattCommunicationStatus status = await characteristic.WriteClientCharacteristicConfigurationDescriptorAsync(
+                    GattClientCharacteristicConfigurationDescriptorValue.Notify);
+                                        if (status == GattCommunicationStatus.Success)
                                         {
-                                            Console.WriteLine("Notify property found");
-                                            //characteristic.ReadClientCharacteristicConfigurationDescriptorAsync();
-                                            GattCommunicationStatus status = await characteristic.WriteClientCharacteristicConfigurationDescriptorAsync(
-                        GattClientCharacteristicConfigurationDescriptorValue.Notify);
-                                            if (status == GattCommunicationStatus.Success)
-                                            {
-                                                characteristic.ValueChanged += Characteristic_ValueChanged;
-                                                // Server has been informed of clients interest.
-                                            }
+                                            characteristic.ValueChanged += Characteristic_ValueChanged;
+                                            // Server has been informed of clients interest.
                                         }
-
                                     }
+
                                 }
                             }
                         }
                     }
+                }
 
-                    Console.WriteLine("Press Any Key to Exit application");
-                    Console.ReadKey();
-                    break;
+                Console.WriteLine("Press Any Key to Exit application");
+                Console.ReadLine();
+                break;
             }
         } 
 
@@ -204,6 +193,7 @@ namespace QuickBlueToothLE
             if (args.Status == GattSessionStatus.Closed)
             {
                 string deviceDisconnectedJson = JsonSerializer.Serialize(new DeviceConnectedPayload { address = address });
+                
                 await socketIOClient.EmitAsync("WORKER:DEVICE_DISCONNECTED", deviceDisconnectedJson);
             }
         }
@@ -250,10 +240,16 @@ namespace QuickBlueToothLE
                         string value = dataArray[k].Split('=')[1];
                         dict[key.Replace("\n", "").Trim()] = value.Replace("\r", "").Replace("\n", "").Replace("+", "").Replace("ppm", "").Trim();
                     }
+                    
+                    //Console.WriteLine("T: " + float.Parse("0.0"));
 
                     //Console.WriteLine("Prev data " + JsonSerializer.Serialize(dict) + " From device " + convertedAddress);
-
+                    /*Console.WriteLine("T: " + float.Parse(dict["T"]) + " H2: " + float.Parse(dict["H2"]) + "PH: " + float.Parse(dict["PH"].Split(' ')[0]) + " Moi" + float.Parse(dict["Moi"].Split(' ')[0]));*/
                     DeviceData deviceData = new DeviceData() {
+                        /*                        T = float.Parse(dict["T"]),
+                                                H2 = float.Parse(dict["H2"]),
+                                                PH = float.Parse(dict["PH"].Split(' ')[0]),
+                                                Moi = float.Parse(dict["Moi"].Split(' ')[0]), */
                         T = dict["T"],
                         H2 = dict["H2"],
                         PH = dict["PH"].Split(' ')[0],
@@ -272,8 +268,31 @@ namespace QuickBlueToothLE
                 }
             }
             catch (Exception e) {
-                Console.WriteLine("Unable to parse " + e.ToString() + " Address " + convertedAddress);
+                var reader = DataReader.FromBuffer(args.CharacteristicValue);
+                int i = 0;
+                string partStr = "";
+                while (i < args.CharacteristicValue.Length)
+                {
+                    partStr += (char)reader.ReadByte();
+                    i++;
+                }
+                Console.WriteLine("Unable to parse " + e.ToString() + " Address " + convertedAddress + " Data " + partStr);
                 devicesDataString[convertedAddress] = "";
+            }
+        }
+
+        /// <summary>This method throws an exception.</summary>
+        /// <param name="myPath">A path to a directory that will be zipped.</param>
+        /// <exception cref="Exception">This exception is thrown if the archive already exists</exception>
+        private static async Task<BluetoothLEDevice> GetBluetoothDeviceByAddress(string address)
+        {
+            try
+            {
+                return await BluetoothLEDevice.FromBluetoothAddressAsync(ConvertMacAddressToInt(address));
+            }
+            catch (Exception ex)
+            {
+                return null;
             }
         }
 
