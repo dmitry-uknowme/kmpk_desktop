@@ -15,7 +15,24 @@ const convertAddress = (address) => address.replaceAll(":", "_");
 
 app.use(cors({ origin: "*", methods: ["GET", "POST"] }));
 
+const dateDirName = `${new Date().toLocaleDateString()}`.replaceAll("/", ".");
 let pointNumber = 0;
+
+try {
+  fs.readdir(`../data/${dateDirName}`, (err, files) => {
+    if (!files?.length) return;
+    for (const file of files
+      ?.filter((f) => f !== "info.json")
+      ?.sort(
+        (a, b) => parseInt(a.split("[")[0]) > parseInt(b.split("[")[0] ? 1 : -1)
+      )) {
+      if (parseInt(file.split("[")[0]) <= pointNumber) {
+        continue;
+      }
+      pointNumber = parseInt(file.split("[")[0]);
+    }
+  });
+} catch (ex) {}
 
 const APP_DIR = "C:\\app\\kmpk_desktop1";
 // const APP_DIR = "/home/dmitry/projects/kmpk_desktop";
@@ -24,25 +41,13 @@ let devices = JSON.parse(
   fs.readFileSync(`${APP_DIR}\\settings.json`, "utf8")
 ).devices;
 
-// let devices = [
-//   { number: 1, address: "00:15:87:00:B7:E2", point_number: 0, type: "Hydro" },
-//   { number: 2, address: "50:65:83:79:24:9F", point_number: 0, type: "Hydro" },
-//   { number: 3, address: "50:65:83:75:E3:2B", point_number: 0, type: "Ground" },
-// ];
-
 io.on("connection", (socket) => {
   console.log("a user connected", socket.id);
-  // socket.emit("WORKER:DEVICE_TRY_CONNECT", { da: "da" });
   socket.on("disconnect", () => {
-    console.log("user disconnected");
+    console.log("user disconnected", socket.id);
   });
-  // socket.emit("my message", { dadadadad: "agada" });
-  // socket.on("DEVICE:DATA_RECIEVE", (payload) => {
-  //   console.log("reccc", payload);
-  // });
 
   socket.on("UI:DEVICE_TRY_CONNECT", (data) => {
-    console.log("try connect", JSON.stringify(data));
     socket.broadcast.emit("WORKER:DEVICE_TRY_CONNECT", data);
   });
 
@@ -51,13 +56,7 @@ io.on("connection", (socket) => {
   });
 
   socket.on("WORKER:DEVICE_CONNECTED", (data) => {
-    //console.log("connected", data, JSON.parse(data));
     data = JSON.parse(data);
-    pointNumber += 1;
-    const dp = devices.find((d) => d.address === data.address);
-    dp.point_number = pointNumber;
-    devices = [...devices.filter((d) => d.address !== data.address), dp];
-
     socket.broadcast.emit("UI:DEVICE_CONNECTED", { ...data, pointNumber });
   });
 
@@ -66,8 +65,18 @@ io.on("connection", (socket) => {
     socket.broadcast.emit("UI:DEVICE_DISCONNECTED", data);
   });
 
+  socket.on("UI:DEVICE_NEW_POINT", async (payload) => {
+    pointNumber += 1;
+    const dp = devices.find((d) => d.address === payload.address);
+    //points = [...points, { number: pointNumber }];
+    dp.point_number = pointNumber;
+    console.log("new point", pointNumber);
+    devices = [...devices.filter((d) => d.address !== payload.address), dp];
+  });
+
   socket.on("WORKER:DEVICE_DATA_RECIEVE", async (data) => {
     data = JSON.parse(data);
+    //console.log("dadadadada", devices);
     const pointNumber = devices.find(
       (d) => d.address === data.address
     ).point_number;
@@ -100,10 +109,11 @@ io.on("connection", (socket) => {
               address,
               type,
               pointNumber,
-              start_time: new Date().toLocaleTimeString(),
+              start_time: new Date().getTime(),
               end_time: null,
             },
             data: [],
+            resultData: {},
           })
         );
       }
@@ -118,8 +128,19 @@ io.on("connection", (socket) => {
 
       oldData.data = [
         ...oldData.data,
-        { ...data.data, timestamp: new Date().getTime() },
+        {
+          temp: parseFloat(data.data.T),
+          h2: parseFloat(data.data.H2),
+          ph: parseFloat(data.data.PH),
+          moi: parseFloat(data.data.Moi),
+          gps: {
+            Lat: parseFloat(data.data.La),
+            Long: parseFloat(data.data.Long),
+          },
+          timestamp: new Date().getTime(),
+        },
       ];
+
       const newData = oldData;
       // console.log("ddddd", newData);
       await fsPromises.writeFile(
@@ -147,10 +168,11 @@ app.get("/getScannedData", (req, res) => {
   console.log("datteee", date);
   const data = [];
   fs.readdir(`../data/${date}`, (err, files) => {
-    //  const count = data.length
-    //  for (let i)
     files
       ?.filter((f) => f !== "info.json")
+      ?.sort(
+        (a, b) => parseInt(a.split("[")[0]) > parseInt(b.split("[")[0] ? 1 : -1)
+      )
       ?.map((file) =>
         data.push(
           JSON.parse(

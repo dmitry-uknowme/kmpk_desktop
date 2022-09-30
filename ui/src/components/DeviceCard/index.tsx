@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import TimerIcon from "../../../public/timer_icon.png";
 import PauseIcon from "@mui/icons-material/Pause";
 import PlayIcon from "@mui/icons-material/PlayArrow";
+import { toast } from "react-toastify";
 
 const socket = io("ws://localhost:8081");
 
@@ -66,16 +67,13 @@ const DeviceCard: React.FC<IDevice> = ({
     socket.emit("UI:DEVICE_TRY_DISCONNECT", { address });
     setIsWaiting(true);
   };
-  // console.log("dataaaaa", data);
-  //console.log("isc", isConnected, "isp", !isPaused, "a", address);
+
   useEffect(() => {
     if (!isConnected) {
-      // tryConnectDevice();
     }
     socket.on("UI:DEVICE_DATA_RECIEVE", (data) => {
-      console.log("isc", isConnected, "isp", !isPaused, "a", address);
       if (data.address === address && !isPaused) {
-        //if (!isConnected) setIsConnected(true);
+        console.log("dataaa", data);
         setAwaitTime(0);
         clearInterval(awaitTimer.current);
         awaitTimer.current = setInterval(() => {
@@ -91,43 +89,53 @@ const DeviceCard: React.FC<IDevice> = ({
       // console.log("dataaaaa", data);
     });
     socket.on("UI:DEVICE_CONNECTED", (data) => {
-      console.log("connectd", data);
       if (data.address === address) {
+        socket.emit("UI:DEVICE_NEW_POINT", { address });
+        //console.log("cn", data, { ...data, pointNumber: data.pointNumber });
         setData((state) => ({ ...state, pointNumber: data.pointNumber }));
         // setData((state) => ({ ...state }));
         setIsConnected(true);
         setIsWaiting(false);
+        setIsPaused(false);
       }
     });
     socket.on("UI:DEVICE_DISCONNECTED", (data) => {
-      console.log("DISSS", data);
       if (data.address === address) {
+        setIsWaiting(false);
+        console.log("ddddddd", address);
+        toast.error(
+          "Невозможно подключиться к устройству с адресом " + data.address
+        );
         setIsConnected(false);
         setIsWaiting(false);
       }
+      clearInterval(timerRef.current);
+      timerRef.current = setInterval(() => {
+        setWorkingTime((state) => (state += 1));
+      }, 1000);
+      if (awaitTime > 30000) {
+        console.log("больше 30 сек нет данных");
+        tryConnectDevice();
+      }
     });
-    clearInterval(timerRef.current);
-    timerRef.current = setInterval(() => {
-      setWorkingTime((state) => (state += 1));
-    }, 1000);
-    if (awaitTime > 30000) {
-      console.log("больше 30 сек нет данных");
-      tryConnectDevice();
-    }
+
     return () => clearInterval(timerRef.current);
   }, []);
 
   useEffect(() => {
     setWorkingTime(0);
     clearInterval(timerRef.current);
-    if (isConnected) {
+    if (isConnected && !isPaused) {
       // connectDevice();
       timerRef.current = setInterval(() => {
         setWorkingTime((state) => (state += 1));
       }, 1000);
     }
+    if (!isConnected) {
+      setIsPaused(true);
+    }
     return () => clearInterval(timerRef.current);
-  }, [isConnected]);
+  }, [isConnected, isPaused]);
 
   useEffect(() => {
     if (!isPaused && isConnected) {
@@ -184,18 +192,27 @@ const DeviceCard: React.FC<IDevice> = ({
 
           <span className={styles.card__number}>
             {isPaused ? (
-              <span onClick={() => setIsPaused(false)}>
+              <span
+                onClick={() => {
+                  isConnected && setIsPaused(false);
+                  socket.emit("UI:DEVICE_NEW_POINT", { address });
+                }}
+                style={{ cursor: "pointer" }}
+              >
                 <PlayIcon />
               </span>
             ) : (
-              <span onClick={() => setIsPaused(true)}>
+              <span
+                onClick={() => setIsPaused(true)}
+                style={{ cursor: "pointer" }}
+              >
                 <PauseIcon
                   color="#bbb"
                   style={{ marginTop: "-4px", color: "#bbb" }}
                 />
               </span>
             )}
-            {isPaused ? "" : number}
+            {number}
           </span>
         </div>
       </div>
@@ -258,7 +275,13 @@ const DeviceCard: React.FC<IDevice> = ({
                     <input
                       className="form-control"
                       style={{ height: 26, fontSize: "0.8rem" }}
-                      value={data?.Lo === "" ? "Нет сигнала" : data?.Long}
+                      value={
+                        isPaused
+                          ? ""
+                          : data?.Lo === ""
+                          ? "Нет сигнала"
+                          : data?.Lo
+                      }
                       disabled
                     />
                     <span
@@ -330,7 +353,7 @@ const DeviceCard: React.FC<IDevice> = ({
             <input
               className="form-control"
               style={{ height: 26, width: 60 }}
-              value={workingTime}
+              value={isPaused ? "" : workingTime}
               disabled
             />
           </div>

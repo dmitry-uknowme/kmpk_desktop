@@ -60,8 +60,27 @@ namespace QuickBlueToothLE
 
         static async Task Main(string[] args)
         {
-            devicesAddresses.Add("88:4A:EA:92:1D:43");
-            devicesAddresses.Add("00:15:87:00:B7:E2");
+            // Query for extra properties you want returned
+            string[] requestedProperties = { "System.Devices.Aep.DeviceAddress", "System.Devices.Aep.IsConnected" };
+
+            DeviceWatcher deviceWatcher =
+                        DeviceInformation.CreateWatcher(
+                                BluetoothLEDevice.GetDeviceSelectorFromPairingState(false), requestedProperties,
+                                DeviceInformationKind.AssociationEndpoint);
+
+            // Register event handlers before starting the watcher.
+            // Added, Updated and Removed are required to get all nearby devices
+            deviceWatcher.Added += DeviceWatcher_Added;
+            deviceWatcher.Updated += DeviceWatcher_Updated;
+            deviceWatcher.Removed += DeviceWatcher_Removed;
+
+            // EnumerationCompleted and Stopped are optional to implement.
+            deviceWatcher.EnumerationCompleted += DeviceWatcher_EnumerationCompleted;
+            deviceWatcher.Stopped += DeviceWatcher_Stopped;
+
+            // Start the watcher.
+            deviceWatcher.Start();
+            
 
             await socketIOClient.ConnectAsync(); 
             Console.WriteLine("initt", socketIOClient.ServerUri);
@@ -79,27 +98,7 @@ namespace QuickBlueToothLE
                 string deviceDisconnectedJson = JsonSerializer.Serialize(new DeviceConnectedPayload { address = address });
                 await socketIOClient.EmitAsync("WORKER:DEVICE_DISCONNECTED", deviceDisconnectedJson);
             });
-                
-            // Query for extra properties you want returned
-            string[] requestedProperties = { "System.Devices.Aep.DeviceAddress", "System.Devices.Aep.IsConnected" };
 
-            DeviceWatcher deviceWatcher =
-                        DeviceInformation.CreateWatcher(
-                                BluetoothLEDevice.GetDeviceSelectorFromPairingState(false),requestedProperties,
-                                DeviceInformationKind.AssociationEndpoint);
-
-            // Register event handlers before starting the watcher.
-            // Added, Updated and Removed are required to get all nearby devices
-            deviceWatcher.Added += DeviceWatcher_Added;
-            deviceWatcher.Updated += DeviceWatcher_Updated;
-            deviceWatcher.Removed += DeviceWatcher_Removed;
-
-            // EnumerationCompleted and Stopped are optional to implement.
-            deviceWatcher.EnumerationCompleted += DeviceWatcher_EnumerationCompleted;
-            deviceWatcher.Stopped += DeviceWatcher_Stopped;
-
-            // Start the watcher.
-            deviceWatcher.Start();
             Console.ReadLine();
             deviceWatcher.Stop();
         }
@@ -122,13 +121,11 @@ namespace QuickBlueToothLE
             while (true)
             {
                 BluetoothLEDevice bluetoothLeDevice = await GetBluetoothDeviceByAddress(address);
-                if (bluetoothLeDevice == null)
+                if (bluetoothLeDevice == null) 
                 {
-                    Console.WriteLine("No device found with address " + address);
                     return;
                 }
                 Console.WriteLine("Attempting to pair device with address" + address);
-                   
                 GattDeviceServicesResult result = await bluetoothLeDevice.GetGattServicesAsync();
 
                 if (result.Status == GattCommunicationStatus.Success)
@@ -175,6 +172,12 @@ namespace QuickBlueToothLE
                             }
                         }
                     }
+                }
+
+                else
+                {
+                    string deviceDisconnectedJson = JsonSerializer.Serialize(new DeviceConnectedPayload { address = address });
+                    await socketIOClient.EmitAsync("WORKER:DEVICE_DISCONNECTED", deviceDisconnectedJson);
                 }
 
                 Console.WriteLine("Press Any Key to Exit application");
@@ -281,17 +284,26 @@ namespace QuickBlueToothLE
             }
         }
 
-        /// <summary>This method throws an exception.</summary>
-        /// <param name="myPath">A path to a directory that will be zipped.</param>
-        /// <exception cref="Exception">This exception is thrown if the archive already exists</exception>
+
         private static async Task<BluetoothLEDevice> GetBluetoothDeviceByAddress(string address)
         {
+            string deviceDisconnectedJson = JsonSerializer.Serialize(new DeviceConnectedPayload { address = address });
             try
             {
-                return await BluetoothLEDevice.FromBluetoothAddressAsync(ConvertMacAddressToInt(address));
+                BluetoothLEDevice bluetoothLEDevice = await BluetoothLEDevice.FromBluetoothAddressAsync(ConvertMacAddressToInt(address));
+                if (bluetoothLEDevice == null)
+                {
+                    Console.WriteLine("No device found with address " + address);
+                    
+                    await socketIOClient.EmitAsync("WORKER:DEVICE_DISCONNECTED", deviceDisconnectedJson);
+                    return null;
+                }
+                return bluetoothLEDevice;
             }
             catch (Exception ex)
             {
+                Console.WriteLine("No device found with address " + address + "Error: " + ex.Message.ToString());
+                await socketIOClient.EmitAsync("WORKER:DEVICE_DISCONNECTED", deviceDisconnectedJson);
                 return null;
             }
         }

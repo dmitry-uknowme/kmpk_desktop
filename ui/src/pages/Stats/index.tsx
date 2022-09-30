@@ -9,10 +9,31 @@ import Graph2 from "./Graph2";
 import ProcessIcon from "../../../public/process_icon.png";
 
 const Stats = () => {
+  const API_URL = "http://91.240.84.221/api/v1/metric/add";
   const [scannedDataDates, setScannedDataDates] = useState([]);
   const [scannedData, setScannedData] = useState([]);
   const [currentDate, setCurrentDate] = useState();
   const [selectedPoint, setSelectedPoint] = useState(1);
+  const [dataToServer, setDataToServer] = useState({
+    user: {
+      full_name: "Тест Тестов Тестович",
+      position: "Замерщик",
+      org_name: "ИЦ УГНТУ",
+    },
+    object: {
+      name: "Объект 1",
+      point_number: "10",
+    },
+    start_time: "2022-09-11 11:00:00",
+    end_time: "2022-09-12 11:00:00",
+    points: [],
+  });
+
+  const sendData = () => {
+    axios.post(API_URL, dataToServer);
+
+    //fetch(API_URL).then(res=>res.json()).then(res=>);
+  };
 
   const fetchScanDates = () => {
     axios
@@ -95,7 +116,21 @@ const Stats = () => {
                       }}
                     >
                       <td>{data?.info?.pointNumber}</td>
-                      <td>{data?.info?.start_time}</td>
+                      <td>
+                        {Math.floor(
+                          (data?.data[data?.data.length - 1].timestamp -
+                            data?.info?.start_time) /
+                            60000
+                        )}
+                        :
+                        {(
+                          (data?.data[data?.data.length - 1].timestamp -
+                            data?.info?.start_time) %
+                          60000
+                        )
+                          .toString()
+                          .slice(0, 2)}
+                      </td>
                       <td>
                         {data?.info.type === "Ground"
                           ? "-"
@@ -141,6 +176,44 @@ const Stats = () => {
                   ))}
                 </tbody>
               </table>
+            </div>
+            <div className="d-flex">
+              {scannedData?.length ? (
+                <button
+                  className="btn btn-primary footer__btn mt-3"
+                  style={{ marginLeft: "1.5rem" }}
+                  onClick={() =>
+                    toast.error(
+                      "Недостаточно данных для расчета скорости коррозии"
+                    )
+                  }
+                >
+                  <img className="footer__btn-icon" src={ProcessIcon} />
+                  <span style={{ marginLeft: "2rem" }}>
+                    Расчитать скорость <br />
+                    коррозии
+                  </span>
+                </button>
+              ) : (
+                ""
+              )}
+              {scannedData?.length ? (
+                <button
+                  className="btn btn-primary footer__btn mt-3"
+                  style={{ marginLeft: "0.5rem" }}
+                  onClick={() => toast.error("Пользователь не авторизован")}
+                >
+                  <span style={{ fontWeight: "900", fontSize: "2rem" }}>✓</span>
+                  {/* <i className="bi bi-check" className="footer__btn-icon"></i> */}
+                  {/* <img className="footer__btn-icon" src="process_icon.png" /> */}
+                  <span style={{ marginLeft: "2rem" }}>
+                    Подписать и отправить <br />
+                    данные
+                  </span>
+                </button>
+              ) : (
+                ""
+              )}
             </div>
           </div>
           <div className="col-md-5 offset-md-1 d-flex flex-column justify-content-end">
@@ -230,42 +303,6 @@ const Stats = () => {
             {/* <MyChart /> */}
             {/* <Chart data={data} axes={axes} /> */}
           </div>
-        </div>
-        <div className="d-flex">
-          {scannedData?.length ? (
-            <button
-              className="btn btn-primary footer__btn mt-3"
-              style={{ marginLeft: "1.5rem" }}
-              onClick={() =>
-                toast.error("Недостаточно данных для расчета скорости коррозии")
-              }
-            >
-              <img className="footer__btn-icon" src={ProcessIcon} />
-              <span style={{ marginLeft: "2rem" }}>
-                Расчитать скорость <br />
-                коррозии
-              </span>
-            </button>
-          ) : (
-            ""
-          )}
-          {scannedData?.length ? (
-            <button
-              className="btn btn-primary footer__btn mt-3"
-              style={{ marginLeft: "1.5rem" }}
-              onClick={() => toast.error("Пользователь не авторизован")}
-            >
-              <span style={{ fontWeight: "900", fontSize: "2rem" }}> ✓</span>
-              {/* <i className="bi bi-check" className="footer__btn-icon"></i> */}
-              {/* <img className="footer__btn-icon" src="process_icon.png" /> */}
-              <span style={{ marginLeft: "2rem" }}>
-                Подписать и отправить <br />
-                данные
-              </span>
-            </button>
-          ) : (
-            ""
-          )}
         </div>
       </div>
     </div>
