@@ -13,6 +13,7 @@ import ProtocolPage from "./pages/Protocol";
 import { ToastContainer, toast } from "react-toastify";
 import { useEffect } from "react";
 import CustomRoutes from "./components/Routes";
+import AuthContextProvider from "./context/AuthContextProvider";
 
 const App: React.FC = () => {
   return (
@@ -30,16 +31,17 @@ const App: React.FC = () => {
           // }, 300)
         }}
         rtl={false}
-        pauseOnFocusLoss
         draggable
         pauseOnHover
       />
-      <BrowserRouter>
-        <CustomRoutes />
-        {/* <Link to="/">
+      <AuthContextProvider>
+        <BrowserRouter>
+          <CustomRoutes />
+          {/* <Link to="/">
           <button className="btn">На главную</button>
         </Link> */}
-      </BrowserRouter>
+        </BrowserRouter>
+      </AuthContextProvider>
     </div>
   );
 };

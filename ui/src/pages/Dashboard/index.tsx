@@ -1,17 +1,20 @@
 // @ts-nocheck
 import DeviceCard from "@/components/DeviceCard";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useContext } from "react";
 import { Offcanvas } from "react-bootstrap";
 import { Link, useSearchParams } from "react-router-dom";
 import UserIcon from "../../../public/user_icon.png";
 import SettingsIcon from "../../../public/settings_icon.png";
 import ResultIcon from "../../../public/result_icon.png";
+import AuthContext from "@/context/AuthContext";
 
 const settings = window.api.getSettings();
 
 const DashboardPage = () => {
+  const { auth, setAuth } = useContext(AuthContext);
   const [search, setSearch] = useSearchParams();
-  const [fullName, setFullName] = useState(search.get("full_name"));
+  const fullName = auth.user.full_name;
+  // const [fullName, setFullName] = useState(search.get("full_name"));
   const [isShowMenu, setIsShowMenu] = useState<boolean>(false);
 
   return (

@@ -38,7 +38,7 @@ interface GraphProps {
 }
 
 const Graph2: React.FC<GraphProps> = ({ data }) => {
-  console.log("ddddd", data);
+  //console.log("ddddd", data);
   return <Line options={options} data={data} />;
 };
 

@@ -153,9 +153,12 @@ app.on("window-all-closed", () => {
   win = null;
   if (process.platform !== "darwin") {
     console.log("killing app...");
-    // kill(workerScript.pid);
-    // kill(serverScript.pid);
-    app.quit();
+    kill(workerScript.pid);
+    kill(serverScript.pid);
+    //nodeChildProcess.spawn('cmd.exe',['npx kill-port'])
+    setTimeout(() => {
+      app.quit();
+    }, 300);
   }
 });
 

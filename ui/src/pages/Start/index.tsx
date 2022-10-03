@@ -1,33 +1,56 @@
 // @ts-nocheck
-import { useLayoutEffect, useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import AuthContext from "@/context/AuthContext";
+import { useLayoutEffect, useState, useContext } from "react";
+import {
+  Link,
+  useLocation,
+  useNavigate,
+  useNavigation,
+  useSearchParams,
+} from "react-router-dom";
 import IntroVideo from "../../../public/intro.mp4";
 
 if (window.isFirstRun === undefined) {
   window.isFirstRun = true;
 }
 const StartPage = () => {
+  const { auth, setAuth } = useContext(AuthContext);
   const [search, setSearch] = useSearchParams();
-  const [formData, setFormData] = useState({ full_name: "" });
+  const [formData, setFormData] = useState({
+    user_full_name: "",
+    user_position: "",
+    user_org_name: "",
+    object_name: "",
+    object_point_number: "",
+  });
   const [isLoaded, setIsLoaded] = useState(
     search.get("intro") === "false" ? true : false
   );
 
+  const navigate = useNavigate();
+
+  const authUser = () => {
+    setAuth({
+      user: {
+        full_name: formData.user_full_name,
+        position: formData.user_position,
+        org_name: formData.user_org_name,
+      },
+      object: {
+        name: formData.object_name,
+        point_number: formData.object_point_number,
+      },
+      start_time: new Date().getTime(),
+      end_time: null,
+    });
+    navigate("/dashboard");
+  };
+
   useLayoutEffect(() => {
-    // console.log("innnn", search.get("intro"));
-    if (
-      search.get("intro") === "false"
-      // window.isFirstRun === true
-      // !sessionStorage.getItem("isFirstRun") ||
-      // sessionStorage.getItem("isFirstRun") === true
-      // sessionStorage.getItem("isFirstRun") === false
-    ) {
+    if (search.get("intro") === "false") {
     } else {
       setTimeout(() => {
         setIsLoaded(true);
-        // window.isFirstRun = false;
-        // sessionStorage.setItem("isFirstRun", false);
-        // setTimeout(() => setIsShowApp(true), 100);
       }, 8000);
     }
   }, []);
@@ -71,54 +94,74 @@ const StartPage = () => {
               <input
                 type="email"
                 className="form-control"
-                id="exampleFormControlInput1"
                 placeholder="ФИО"
                 value={formData.full_name}
                 onChange={(e) =>
                   setFormData((state) => ({
                     ...state,
-                    full_name: e.target.value,
+                    user_full_name: e.target.value,
                   }))
                 }
               />
               <input
-                type="email"
                 className="form-control mt-3"
-                id="exampleFormControlInput1"
                 placeholder="Должность"
+                value={formData.user_position}
+                onChange={(e) =>
+                  setFormData((state) => ({
+                    ...state,
+                    user_position: e.target.value,
+                  }))
+                }
               />
               <input
-                type="email"
                 className="form-control mt-3"
-                id="exampleFormControlInput1"
                 placeholder="Наименование организации"
+                value={formData.user_org_name}
+                onChange={(e) =>
+                  setFormData((state) => ({
+                    ...state,
+                    user_org_name: e.target.value,
+                  }))
+                }
               />
               <input
-                type="email"
                 className="form-control mt-3"
-                id="exampleFormControlInput1"
                 placeholder="Наименование объекта"
+                value={formData.object_name}
+                onChange={(e) =>
+                  setFormData((state) => ({
+                    ...state,
+                    object_name: e.target.value,
+                  }))
+                }
               />
               <input
-                type="email"
                 className="form-control mt-3"
-                id="exampleFormControlInput1"
                 placeholder="Номер участка"
+                value={formData.object_point_number}
+                onChange={(e) =>
+                  setFormData((state) => ({
+                    ...state,
+                    object_point_number: e.target.value,
+                  }))
+                }
               />
               <div className="d-flex justify-content-center mt-4">
-                <Link to={`/dashboard?full_name=${formData.full_name}`}>
-                  <button
-                    className="btn btn-primary"
-                    type="button"
-                    style={{
-                      background: "#00AAD4",
-                      borderColor: "#00AAD4;",
-                      textTransform: "uppercase",
-                    }}
-                  >
-                    Начать работу
-                  </button>
-                </Link>
+                {/* <Link to={`/dashboard?full_name=${formData.full_name}`}> */}
+                <button
+                  className="btn btn-primary"
+                  type="button"
+                  style={{
+                    background: "#00AAD4",
+                    borderColor: "#00AAD4;",
+                    textTransform: "uppercase",
+                  }}
+                  onClick={() => authUser()}
+                >
+                  Начать работу
+                </button>
+                {/* </Link> */}
               </div>
             </div>
           </div>

@@ -9,6 +9,7 @@ using Windows.Devices.Bluetooth.GenericAttributeProfile;
 using Windows.Devices.Enumeration;
 using Windows.Storage.Streams;
 using nexus.core;
+using System.Collections;
 
 namespace QuickBlueToothLE
 {
@@ -56,7 +57,13 @@ namespace QuickBlueToothLE
         private static Dictionary<string,DateTime> connectedDevicesTimes = new Dictionary<string,DateTime>();
         private static List<string> devicesAddresses = new List<string>();
         public static readonly Guid SERVICE_UUID = Guid.Parse("0000ffe0-0000-1000-8000-00805f9b34fb");
-        private static readonly SocketIO socketIOClient = new SocketIO("http://localhost:8081/");
+        private static readonly SocketIO socketIOClient = new SocketIO("http://localhost:8081/", new SocketIOOptions()
+        {
+            Query = new List<KeyValuePair<string, string>>
+            {
+                new KeyValuePair<string, string>("name", "worker"),
+            }
+        });
 
         static async Task Main(string[] args)
         {
@@ -99,9 +106,16 @@ namespace QuickBlueToothLE
                 await socketIOClient.EmitAsync("WORKER:DEVICE_DISCONNECTED", deviceDisconnectedJson);
             });
 
+            //socketIOClient.OnDisconnected += ExitApp;
+
             Console.ReadLine();
             deviceWatcher.Stop();
         }
+
+        /*private static void ExitApp (string str)
+        {
+            Environment.Exit(0);
+        }*/
 
         private static string ConvertMacAddressToString(ulong macAddress)
         {

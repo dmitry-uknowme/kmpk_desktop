@@ -7,6 +7,7 @@ const { Server } = require("socket.io");
 const fs = require("fs");
 const fsPromises = require("fs").promises;
 const { exec, execSync } = require("child_process");
+const kill = require("kill-port");
 const io = new Server(server, {
   cors: { origin: "*", methods: ["GET", "POST"] },
 });
@@ -134,8 +135,8 @@ io.on("connection", (socket) => {
           ph: parseFloat(data.data.PH),
           moi: parseFloat(data.data.Moi),
           gps: {
-            Lat: parseFloat(data.data.La),
-            Long: parseFloat(data.data.Long),
+            lat: parseFloat(data.data.La),
+            long: parseFloat(data.data.Long),
           },
           timestamp: new Date().getTime(),
         },
@@ -186,4 +187,9 @@ app.get("/getScannedData", (req, res) => {
 
 server.listen(8081, () => {
   console.log("listening on *:8081");
+});
+
+server.on("close", () => {
+  console.log("closeeee");
+  kill(8081, "tcp");
 });

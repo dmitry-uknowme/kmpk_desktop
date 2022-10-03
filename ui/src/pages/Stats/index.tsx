@@ -1,5 +1,6 @@
 // @ts-nocheck
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useContext } from "react";
+import { v4 as uuidv4 } from "uuid";
 import axios from "axios";
 import { Link } from "react-router-dom";
 import { AxisOptions, Chart } from "react-charts";
@@ -7,30 +8,49 @@ import Graph from "./Graph";
 import { toast } from "react-toastify";
 import Graph2 from "./Graph2";
 import ProcessIcon from "../../../public/process_icon.png";
+import AuthContext from "@/context/AuthContext";
 
 const Stats = () => {
-  const API_URL = "http://91.240.84.221/api/v1/metric/add";
+  const API_URL = "http://localhost:8000/api/v1/metric/add";
+  //const API_URL = "http://91.240.84.221/api/v1/metric/add";
+
   const [scannedDataDates, setScannedDataDates] = useState([]);
   const [scannedData, setScannedData] = useState([]);
   const [currentDate, setCurrentDate] = useState();
   const [selectedPoint, setSelectedPoint] = useState(1);
+  const { auth, setAuth } = useContext(AuthContext);
   const [dataToServer, setDataToServer] = useState({
     user: {
-      full_name: "Тест Тестов Тестович",
-      position: "Замерщик",
-      org_name: "ИЦ УГНТУ",
+      full_name: auth?.user.full_name || "",
+      position: auth?.user.position || "",
+      org_name: auth?.user.org_name || "",
     },
     object: {
-      name: "Объект 1",
-      point_number: "10",
+      name: auth?.object.name || "",
+      point_number: auth?.object.point_number || "",
     },
-    start_time: "2022-09-11 11:00:00",
-    end_time: "2022-09-12 11:00:00",
+    start_time: auth?.start_time,
+    end_time: new Date().getTime(),
     points: [],
   });
 
   const sendData = () => {
-    axios.post(API_URL, dataToServer);
+    if (!dataToServer?.points?.length)
+      return toast.error(
+        "Ошибка при отправке данных на сервер, возможно эти данные уже были отправлены"
+      );
+    axios
+      .post(API_URL, dataToServer, {
+        headers: { "Access-Control-Allow-Origin": "http://localhost:5173" },
+      })
+      .then((response) => {
+        setDataToServer();
+        console.log("ress", response);
+        toast.success("Данные успешно отправлены на сервер");
+      })
+      .catch((er) => {
+        toast.error("Ошибка при отправке данных на сервер");
+      });
 
     //fetch(API_URL).then(res=>res.json()).then(res=>);
   };
@@ -46,10 +66,46 @@ const Stats = () => {
       .get(`http://localhost:8081/getScannedData?date=${date}`)
       .then((response) => setScannedData(response.data.data));
   };
+  useEffect(() => {
+    if (scannedData?.length) {
+      setDataToServer((state) => ({
+        ...state,
+        points: [
+          ...scannedData.map((data, number) => ({
+            id: uuidv4(),
+            number: number + 1,
+            h2: data.data.reduce((avg, value) => {
+              return parseFloat(avg) + parseFloat(value.h2) / data.data.length;
+            }, 0),
+            maxH2: Math.max(...data.data.map((d) => d.h2)),
+            temp: data.data.reduce((avg, value) => {
+              return (
+                parseFloat(avg) +
+                parseFloat(value.temp) / data.data.length
+              ).toString();
+            }, 0),
+            ph: data.data.reduce((avg, value) => {
+              return parseFloat(avg) + parseFloat(value.ph) / data.data.length;
+            }, 0),
+            moi: data.data.reduce((avg, value) => {
+              return parseFloat(avg) + parseFloat(value.moi) / data.data.length;
+            }, 0),
+            gps: {
+              lat: data.data[0].gps.lat || "",
+              long: data.data[0].gps.long || "",
+            },
+          })),
+        ],
+      }));
+    }
+  }, [scannedData]);
 
   useEffect(() => {
     fetchScanDates();
   }, []);
+
+  console.log("ppp", JSON.stringify(dataToServer));
+  //console.log("scanned", scannedData);
 
   return (
     <div className="stats_page">
@@ -201,7 +257,7 @@ const Stats = () => {
                 <button
                   className="btn btn-primary footer__btn mt-3"
                   style={{ marginLeft: "0.5rem" }}
-                  onClick={() => toast.error("Пользователь не авторизован")}
+                  onClick={() => sendData()}
                 >
                   <span style={{ fontWeight: "900", fontSize: "2rem" }}>✓</span>
                   {/* <i className="bi bi-check" className="footer__btn-icon"></i> */}
