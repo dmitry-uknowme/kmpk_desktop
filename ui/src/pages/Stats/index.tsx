@@ -40,9 +40,7 @@ const Stats = () => {
         "Ошибка при отправке данных на сервер, возможно эти данные уже были отправлены"
       );
     axios
-      .post(API_URL, dataToServer, {
-        headers: { "Access-Control-Allow-Origin": "http://localhost:5173" },
-      })
+      .post(API_URL, dataToServer)
       .then((response) => {
         setDataToServer();
         console.log("ress", response);
@@ -69,6 +67,17 @@ const Stats = () => {
   useEffect(() => {
     if (scannedData?.length) {
       setDataToServer((state) => ({
+        user: {
+          full_name: auth?.user.full_name || "",
+          position: auth?.user.position || "",
+          org_name: auth?.user.org_name || "",
+        },
+        object: {
+          name: auth?.object.name || "",
+          point_number: auth?.object.point_number || "",
+        },
+        start_time: auth?.start_time,
+        end_time: new Date().getTime(),
         ...state,
         points: [
           ...scannedData.map((data, number) => ({
@@ -80,9 +89,8 @@ const Stats = () => {
             maxH2: Math.max(...data.data.map((d) => d.h2)),
             temp: data.data.reduce((avg, value) => {
               return (
-                parseFloat(avg) +
-                parseFloat(value.temp) / data.data.length
-              ).toString();
+                parseFloat(avg) + parseFloat(value.temp) / data.data.length
+              );
             }, 0),
             ph: data.data.reduce((avg, value) => {
               return parseFloat(avg) + parseFloat(value.ph) / data.data.length;
@@ -94,6 +102,8 @@ const Stats = () => {
               lat: data.data[0].gps.lat || "",
               long: data.data[0].gps.long || "",
             },
+
+            dateTime: data.data[0].timestamp || "",
           })),
         ],
       }));
@@ -104,7 +114,7 @@ const Stats = () => {
     fetchScanDates();
   }, []);
 
-  console.log("ppp", JSON.stringify(dataToServer));
+  //console.log("ppp", JSON.stringify(dataToServer));
   //console.log("scanned", scannedData);
 
   return (
