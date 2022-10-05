@@ -155,7 +155,7 @@ app.on("window-all-closed", () => {
     console.log("killing app...");
     kill(workerScript.pid);
     kill(serverScript.pid);
-    //nodeChildProcess.spawn('cmd.exe',['npx kill-port'])
+    nodeChildProcess.spawn("cmd.exe", ["npx kill-port"]);
     setTimeout(() => {
       app.quit();
     }, 300);

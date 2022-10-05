@@ -11,8 +11,8 @@ import ProcessIcon from "../../../public/process_icon.png";
 import AuthContext from "@/context/AuthContext";
 
 const Stats = () => {
-  const API_URL = "http://localhost:8000/api/v1/metric/add";
-  //const API_URL = "http://91.240.84.221/api/v1/metric/add";
+  // const API_URL = "http://localhost:8000/api/v1/metric/add";
+  const API_URL = "http://91.240.84.221/api/v1/metric/add";
 
   const [scannedDataDates, setScannedDataDates] = useState([]);
   const [scannedData, setScannedData] = useState([]);
@@ -49,8 +49,6 @@ const Stats = () => {
       .catch((er) => {
         toast.error("Ошибка при отправке данных на сервер");
       });
-
-    //fetch(API_URL).then(res=>res.json()).then(res=>);
   };
 
   const fetchScanDates = () => {
@@ -102,7 +100,6 @@ const Stats = () => {
               lat: data.data[0].gps.lat || "",
               long: data.data[0].gps.long || "",
             },
-
             dateTime: data.data[0].timestamp || "",
           })),
         ],

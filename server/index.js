@@ -1,4 +1,5 @@
 const express = require("express");
+const nodeChildProcess = require("child_process");
 const app = express();
 const cors = require("cors");
 const http = require("http");
@@ -17,6 +18,31 @@ const convertAddress = (address) => address.replaceAll(":", "_");
 app.use(cors({ origin: "*", methods: ["GET", "POST"] }));
 
 const dateDirName = `${new Date().toLocaleDateString()}`.replaceAll("/", ".");
+
+let workerScript;
+
+const runWorker = () => {
+  workerScript = nodeChildProcess.spawn("cmd.exe", [
+    "/c",
+    "start",
+    "C:\\app\\kmpk_desktop1\\worker2\\bin\\Debug\\BluetoothWorker.exe",
+  ]);
+
+  console.log("[worker] PID: " + workerScript.pid);
+
+  workerScript.stdout.on("data", (data) => {
+    console.log("[worker] stdout: " + data);
+  });
+
+  workerScript.stderr.on("data", (err) => {
+    console.log("[worker] stderr: " + err);
+  });
+
+  workerScript.on("exit", (code) => {
+    console.log("[worker] Exit Code: " + code);
+  });
+};
+
 let pointNumber = 0;
 
 try {
@@ -42,10 +68,39 @@ let devices = JSON.parse(
   fs.readFileSync(`${APP_DIR}\\settings.json`, "utf8")
 ).devices;
 
+const workers = {};
+
 io.on("connection", (socket) => {
   console.log("a user connected", socket.id);
+  if (socket?.handshake.query?.name === "worker") {
+    workers[socket.id] = socket.id;
+  }
   socket.on("disconnect", () => {
     console.log("user disconnected", socket.id);
+    if (socket?.handshake.query?.name === "worker") {
+      delete workers[socket.id];
+      console.log("restarting worker", workers);
+      if (Object.keys(workers) <= 1) {
+        runWorker();
+        devices.map((device) => {
+          socket.broadcast.emit("UI:DEVICE_DISCONNECTED", {
+            address: device.address,
+          });
+
+          setTimeout(
+            () => socket.broadcast.emit("WORKER:DEVICE_TRY_CONNECT", data),
+            2000
+          );
+        });
+        devices;
+      }
+    }
+  });
+
+  socket.on("APP:EXIT", (data) => {
+    socket.broadcast.emit("UI:EXIT", data);
+    socket.broadcast.emit("WORKER:EXIT", data);
+    setTimeout(() => process.exit(0), 1000);
   });
 
   socket.on("UI:DEVICE_TRY_CONNECT", (data) => {
