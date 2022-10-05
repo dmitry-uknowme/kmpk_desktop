@@ -10,6 +10,7 @@ using Windows.Devices.Enumeration;
 using Windows.Storage.Streams;
 using nexus.core;
 using System.Collections;
+using System.Diagnostics;
 
 namespace QuickBlueToothLE
 {
@@ -67,6 +68,7 @@ namespace QuickBlueToothLE
 
         static async Task Main(string[] args)
         {
+            Console.WriteLine("PID: " + Process.GetCurrentProcess().Id);
             // Query for extra properties you want returned
             string[] requestedProperties = { "System.Devices.Aep.DeviceAddress", "System.Devices.Aep.IsConnected" };
 
@@ -105,17 +107,18 @@ namespace QuickBlueToothLE
                 string deviceDisconnectedJson = JsonSerializer.Serialize(new DeviceConnectedPayload { address = address });
                 await socketIOClient.EmitAsync("WORKER:DEVICE_DISCONNECTED", deviceDisconnectedJson);
             });
+           
 
-            //socketIOClient.OnDisconnected += ExitApp;
+            socketIOClient.OnDisconnected += ExitApp;
 
             Console.ReadLine();
             deviceWatcher.Stop();
         }
 
-        /*private static void ExitApp (string str)
+        private static void ExitApp(string str)
         {
             Environment.Exit(0);
-        }*/
+        }
 
         private static string ConvertMacAddressToString(ulong macAddress)
         {

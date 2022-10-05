@@ -72,6 +72,7 @@ const DeviceCard: React.FC<IDevice> = ({
     if (!isConnected) {
     }
     socket.on("UI:DEVICE_DATA_RECIEVE", (data) => {
+      if (!isConnected) setIsConnected(true);
       if (data.address === address && !isPaused) {
         console.log("dataaa", data);
         setAwaitTime(0);
@@ -102,7 +103,7 @@ const DeviceCard: React.FC<IDevice> = ({
     socket.on("UI:DEVICE_DISCONNECTED", (data) => {
       if (data.address === address) {
         setIsWaiting(false);
-        console.log("ddddddd", address);
+        //console.log("ddddddd", address);
         toast.error(
           "Невозможно подключиться к устройству с адресом " + data.address
         );

@@ -70,7 +70,9 @@ let devices = JSON.parse(
 
 const workers = {};
 
-io.on("connection", (socket) => {
+io.on("connection", async (socket) => {
+  const sockets = await io.allSockets();
+  console.log("sockk", sockets);
   console.log("a user connected", socket.id);
   if (socket?.handshake.query?.name === "worker") {
     workers[socket.id] = socket.id;
