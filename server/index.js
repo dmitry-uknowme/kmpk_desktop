@@ -88,7 +88,10 @@ io.on("connection", (socket) => {
           });
 
           setTimeout(
-            () => socket.broadcast.emit("WORKER:DEVICE_TRY_CONNECT", data),
+            () =>
+              socket.broadcast.emit("WORKER:DEVICE_TRY_CONNECT", {
+                address: device.address,
+              }),
             2000
           );
         });
