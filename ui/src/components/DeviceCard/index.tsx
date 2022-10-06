@@ -127,7 +127,6 @@ const DeviceCard: React.FC<IDevice> = ({
     setWorkingTime(0);
     clearInterval(timerRef.current);
     if (isConnected && !isPaused) {
-      // connectDevice();
       timerRef.current = setInterval(() => {
         setWorkingTime((state) => (state += 1));
       }, 1000);

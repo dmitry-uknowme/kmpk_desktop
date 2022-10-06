@@ -86,9 +86,9 @@ const Stats = () => {
             }, 0),
             maxH2: Math.max(...data.data.map((d) => d.h2)),
             temp: data.data.reduce((avg, value) => {
-              return (
-                parseFloat(avg) + parseFloat(value.temp) / data.data.length
-              );
+              return parseFloat(avg) + value.temp
+                ? parseFloat(value.temp)
+                : 0 / data.data.length;
             }, 0),
             ph: data.data.reduce((avg, value) => {
               return parseFloat(avg) + parseFloat(value.ph) / data.data.length;
@@ -108,11 +108,16 @@ const Stats = () => {
   }, [scannedData]);
 
   useEffect(() => {
-    fetchScanDates();
-  }, []);
+    if (!auth) {
+      toast.error("Пользователь не авторизован");
+      setTimeout(() => navigate("/"), 500);
+    }
+  }, [auth]);
 
   //console.log("ppp", JSON.stringify(dataToServer));
   //console.log("scanned", scannedData);
+
+  console.log("scannnnn", scannedData[selectedPoint]);
 
   return (
     <div className="stats_page">
@@ -286,22 +291,33 @@ const Stats = () => {
                   labels: scannedData.map((d) => d.info.pointNumber),
                   datasets: [
                     {
+                      borderColor: "rgb(255, 99, 132)",
+                      backgroundColor: "rgba(255, 99, 132, 0.5)",
+                      borderWidth: 1,
                       label: "H2",
                       data: scannedData.map((d) =>
                         d.data.reduce(function (avg, value) {
-                          return avg + parseFloat(value.h2) / d.data.length;
+                          if (d.info.type === "Hydro") {
+                            return avg + parseFloat(value.h2) / d.data.length;
+                          }
                         }, 0)
                       ),
                     },
                     {
+                      borderColor: "rgb(53, 162, 235)",
+                      backgroundColor: "rgba(53, 162, 235, 0.5)",
                       label: "pH",
                       data: scannedData.map((d) =>
                         d.data.reduce(function (avg, value) {
-                          return avg + parseFloat(value.ph) / d.data.length;
+                          if (d.info.type === "Ground") {
+                            return avg + parseFloat(value.ph) / d.data.length;
+                          }
                         }, 0)
                       ),
                     },
                     {
+                      borderColor: "rgba(10, 162, 235, 0.5)",
+                      backgroundColor: "rgba(10, 162, 235, 0.2)",
                       label: "T",
                       data: scannedData.map((d) =>
                         d.data.reduce(function (avg, value) {
@@ -324,7 +340,7 @@ const Stats = () => {
               ""
             )}
 
-            {scannedData[selectedPoint] ? (
+            {scannedData?.find((d) => d.info.pointNumber === selectedPoint) ? (
               <div style={{ overflowX: "scroll" }}>
                 <div
                   className="chart-container"
@@ -332,21 +348,50 @@ const Stats = () => {
                 >
                   <Graph2
                     data={{
-                      labels: scannedData[selectedPoint].data.map((d) =>
-                        new Date(d.timestamp).toLocaleTimeString()
-                      ),
+                      labels: scannedData
+                        ?.find((d) => d.info.pointNumber === selectedPoint)
+                        .data.map((d) =>
+                          new Date(d.timestamp).toLocaleTimeString()
+                        ),
                       datasets: [
                         {
+                          backgroundColor: [
+                            "rgba(255, 99, 132, 0.2)",
+                            "rgba(54, 162, 235, 0.2)",
+                            "rgba(255, 206, 86, 0.2)",
+                            "rgba(75, 192, 192, 0.2)",
+                            "rgba(153, 102, 255, 0.2)",
+                            "rgba(255, 159, 64, 0.2)",
+                          ],
+                          borderColor: [
+                            "rgba(255, 99, 132, 1)",
+                            "rgba(54, 162, 235, 1)",
+                            "rgba(255, 206, 86, 1)",
+                            "rgba(75, 192, 192, 1)",
+                            "rgba(153, 102, 255, 1)",
+                            "rgba(255, 159, 64, 1)",
+                          ],
+                          borderWidth: 1,
                           label:
-                            scannedData[selectedPoint]?.type === "Hydro"
+                            scannedData?.find(
+                              (d) => d.info.pointNumber === selectedPoint
+                            )?.info?.type === "Hydro"
                               ? "H2"
                               : "pH",
                           data:
-                            scannedData[selectedPoint]?.type === "Hydro"
-                              ? scannedData[selectedPoint].data.map((d) => d.h2)
-                              : scannedData[selectedPoint].data.map(
-                                  (d) => d.ph
-                                ),
+                            scannedData?.find(
+                              (d) => d.info.pointNumber === selectedPoint
+                            )?.info?.type === "Hydro"
+                              ? scannedData
+                                  ?.find(
+                                    (d) => d.info.pointNumber === selectedPoint
+                                  )
+                                  .data.map((d) => d.h2)
+                              : scannedData
+                                  ?.find(
+                                    (d) => d.info.pointNumber === selectedPoint
+                                  )
+                                  .data.map((d) => d.ph),
                         },
                       ],
                     }}
@@ -362,9 +407,6 @@ const Stats = () => {
             ) : (
               ""
             )}
-
-            {/* <MyChart /> */}
-            {/* <Chart data={data} axes={axes} /> */}
           </div>
         </div>
       </div>

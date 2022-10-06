@@ -1,9 +1,20 @@
 // @ts-nocheck
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import AuthContext, { IAuthData } from "./AuthContext";
 
 const AuthContextProvider: React.FC = ({ children }) => {
   const [auth, setAuth] = useState<IAuthData>(null as unknown as IAuthData);
+
+  useEffect(() => {
+    if (auth) {
+      localStorage.setItem("auth", JSON.stringify(auth));
+    } else {
+      if (localStorage.getItem("auth")) {
+        setAuth(JSON.parse(localStorage.getItem("auth")));
+      }
+    }
+  }, [auth]);
+
   return (
     <AuthContext.Provider
       value={{

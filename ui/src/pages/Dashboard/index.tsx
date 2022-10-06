@@ -142,9 +142,13 @@ const DashboardPage = () => {
         </main>
         <footer className="footer" style={{ marginTop: "6rem" }}>
           <Link to="/stats">
-            <button className="btn btn-primary footer__btn" type="button">
+            <button
+              className="btn btn-primary footer__btn"
+              type="button"
+              style={{ textDecoration: "none" }}
+            >
               <img className="footer__btn-icon" src={ResultIcon} />
-              <span style={{ marginLeft: "2rem" }}>
+              <span style={{ marginLeft: "2rem", textDecoration: "none" }}>
                 Результаты
                 <br /> измерения
               </span>
