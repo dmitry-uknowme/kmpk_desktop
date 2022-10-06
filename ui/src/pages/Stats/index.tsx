@@ -114,10 +114,9 @@ const Stats = () => {
     }
   }, [auth]);
 
-  //console.log("ppp", JSON.stringify(dataToServer));
-  //console.log("scanned", scannedData);
-
-  console.log("scannnnn", scannedData[selectedPoint]);
+  useEffect(() => {
+    fetchScanDates();
+  }, []);
 
   return (
     <div className="stats_page">

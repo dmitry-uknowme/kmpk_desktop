@@ -56,6 +56,7 @@ const DeviceCard: React.FC<IDevice> = ({
     awaitTimer.current = setInterval(() => {
       setAwaitTime((state) => (state += 1));
     }, 1000);
+    setTimeout(() => tryConnectDevice(), 500);
   }, []);
 
   const tryConnectDevice = () => {
@@ -72,9 +73,9 @@ const DeviceCard: React.FC<IDevice> = ({
     if (!isConnected) {
     }
     socket.on("UI:DEVICE_DATA_RECIEVE", (data) => {
-      if (!isConnected) setIsConnected(true);
+      if (!isConnected && !isWaiting) setIsConnected(true);
       if (data.address === address && !isPaused) {
-        console.log("dataaa", data);
+        // console.log("dataaa", data);
         setAwaitTime(0);
         clearInterval(awaitTimer.current);
         awaitTimer.current = setInterval(() => {
