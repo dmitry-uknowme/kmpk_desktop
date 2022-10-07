@@ -1,4 +1,5 @@
 const express = require("express");
+var bodyParser = require("body-parser");
 const nodeChildProcess = require("child_process");
 const app = express();
 const cors = require("cors");
@@ -16,10 +17,13 @@ const io = new Server(server, {
 const convertAddress = (address) => address.replaceAll(":", "_");
 
 app.use(cors({ origin: "*", methods: ["GET", "POST"] }));
+app.use(bodyParser.json());
 
 const dateDirName = `${new Date().toLocaleDateString()}`.replaceAll("/", ".");
 
 let workerScript;
+
+let sessionNumber;
 
 const runWorker = () => {
   workerScript = nodeChildProcess.spawn("cmd.exe", [
@@ -150,19 +154,21 @@ io.on("connection", async (socket) => {
       "."
     );
 
-    if (!fs.existsSync(`../data/${dateDirName}`)) {
-      fs.mkdirSync(`../data/${dateDirName}`, { recursive: true });
+    if (!fs.existsSync(`../data/${dateDirName}/${sessionNumber}`)) {
+      fs.mkdirSync(`../data/${dateDirName}/${sessionNumber}`, {
+        recursive: true,
+      });
     }
     try {
       if (
         !fs.existsSync(
-          `../data/${dateDirName}/${pointNumber}[${convertAddress(
+          `../data/${dateDirName}/${sessionNumber}/${pointNumber}[${convertAddress(
             address
           )}].json`
         )
       ) {
         await fsPromises.writeFile(
-          `../data/${dateDirName}/${pointNumber}[${convertAddress(
+          `../data/${dateDirName}/${sessionNumber}/${pointNumber}[${convertAddress(
             address
           )}].json`,
           JSON.stringify({
@@ -181,7 +187,7 @@ io.on("connection", async (socket) => {
 
       const oldData = JSON.parse(
         await fsPromises.readFile(
-          `../data/${dateDirName}/${pointNumber}[${convertAddress(
+          `../data/${dateDirName}/${sessionNumber}/${pointNumber}[${convertAddress(
             address
           )}].json`
         )
@@ -203,9 +209,8 @@ io.on("connection", async (socket) => {
       ];
 
       const newData = oldData;
-      // console.log("ddddd", newData);
       await fsPromises.writeFile(
-        `../data/${dateDirName}/${pointNumber}[${convertAddress(
+        `../data/${dateDirName}/${sessionNumber}/${pointNumber}[${convertAddress(
           address
         )}].json`,
         JSON.stringify(newData, null, 2)
@@ -218,31 +223,125 @@ io.on("connection", async (socket) => {
   });
 });
 
-app.get("/getScannedDataDates", (req, res) => {
+app.get("/getScannedDataDates", async (req, res) => {
   fs.readdir("../data", (err, dates) => {
-    res.json({ dates });
+    res.status(200).json({ status: "success", dates: dates.sort() });
+    if (err) {
+      res.status(400).json({ status: "error", error: err });
+    }
+    // dates.map((d) => {
+    //   console.log("ddddd", d);
+    //   result.dates[d] = [];
+    //   fs.readdir(`../data/${d}`, (err, sessions) => {
+    //     // console.log("sessss", sessions);
+    //     sessions.map((s) => {
+    //       result["dates"][d].push(s);
+    //     });
+    //   });
+    // });
+    // //res.json({ dates });
   });
+});
+
+app.get("/getScannedDataDatesSessions", async (req, res) => {
+  const date = req.param("date");
+  if (!date) {
+    res.status(400).json({ status: "error" });
+  }
+
+  try {
+    const sessions = await fsPromises.readdir(`../data/${date}`);
+    res.status(200).json({
+      status: "success",
+      sessions: sessions
+        .map((s) => parseInt(s))
+        .sort((a, b) => (a > b ? 1 : -1)),
+    });
+  } catch (err) {
+    res.status(500).json({ status: "error", error: err });
+  }
 });
 
 app.get("/getScannedData", (req, res) => {
   const date = req.param("date");
-  console.log("datteee", date);
+  const sessionNumber = req.param("session_number");
+  if (!date || !sessionNumber) {
+    res.status(400).json({ status: "error", error: "Bad Request" });
+  }
   const data = [];
-  fs.readdir(`../data/${date}`, (err, files) => {
+  fs.readdir(`../data/${date}/${sessionNumber}`, (err, files) => {
+    if (err) {
+      res.status(500).json({ status: "error", error: err });
+    }
+
     files
-      ?.filter((f) => f !== "info.json")
+      ?.filter((f) => f !== "auth.json")
       ?.sort(
         (a, b) => parseInt(a.split("[")[0]) > parseInt(b.split("[")[0] ? 1 : -1)
       )
       ?.map((file) =>
         data.push(
           JSON.parse(
-            fs.readFileSync(`../data/${date}/${file.replaceAll(":", "_")}`)
+            fs.readFileSync(
+              `../data/${date}/${sessionNumber}/${file.replaceAll(":", "_")}`
+            )
           )
         )
       );
-    res.json({ data });
+    res.json({ status: "success", points: data });
   });
+});
+
+app.post("/auth/login", async (req, res) => {
+  const body = req.body;
+  const dateDirName = `${new Date().toLocaleDateString()}`.replaceAll("/", ".");
+  try {
+    folders = await fsPromises.readdir(`../data/${dateDirName}`);
+    sessionNumber = folders.length + 1;
+    const result = {
+      date: dateDirName,
+      session_number: sessionNumber,
+      user: {
+        full_name: body.user.full_name,
+        position: body.user.position,
+        org_name: body.user.org_name,
+      },
+      object: {
+        name: body.object.name,
+        point_number: body.object.point_number,
+      },
+      start_time: new Date().getTime(),
+      end_time: null,
+    };
+    await fsPromises.mkdir(`../data/${dateDirName}/${sessionNumber}`);
+    await fsPromises.writeFile(
+      `../data/${dateDirName}/${sessionNumber}/auth.json`,
+      JSON.stringify(result, null, 2)
+    );
+    res.status(200).json({ status: "success", response: result });
+  } catch (err) {
+    res.status(400).json({ status: "error", error: err });
+  }
+});
+
+app.post("/auth/logout", async (req, res) => {
+  const body = req.body;
+  const sessionNumber = body.sessionNumber;
+  const oldData = await JSON.parse(
+    fsPromises.readFile(`../data/${dateDirName}/${sessionNumber}/auth.json`)
+  );
+
+  const newData = { ...oldData, end_time: new Date().getTime() };
+
+  try {
+    await fsPromises.writeFile(
+      `../data/${dateDirName}/${sessionNumber}/auth.json`,
+      newData
+    );
+    res.status(200).json({ status: "success" });
+  } catch (err) {
+    res.status(400).json({ status: "error", message: err });
+  }
 });
 
 server.listen(8081, () => {

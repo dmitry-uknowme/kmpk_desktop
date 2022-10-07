@@ -2,7 +2,7 @@
 import DeviceCard from "@/components/DeviceCard";
 import { useState, useEffect, useRef, useContext } from "react";
 import { Offcanvas } from "react-bootstrap";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import UserIcon from "../../../public/user_icon.png";
 import SettingsIcon from "../../../public/settings_icon.png";
 import ResultIcon from "../../../public/result_icon.png";
@@ -13,9 +13,30 @@ const settings = window.api.getSettings();
 const DashboardPage = () => {
   const { auth, setAuth } = useContext(AuthContext);
   const [search, setSearch] = useSearchParams();
-  const fullName = auth.user.full_name;
-  // const [fullName, setFullName] = useState(search.get("full_name"));
+  const fullName = auth?.user?.full_name;
   const [isShowMenu, setIsShowMenu] = useState<boolean>(false);
+  const navigate = useNavigate();
+
+  // useEffect(() => {
+  //   console.log("aaa", auth);
+  //   if (!auth) {
+  //     navigate("/");
+  //   }
+  // }, []);
+
+  // useEffect(() => {
+  //   if (auth) {
+  //     localStorage.setItem("auth", JSON.stringify(auth));
+  //   }
+  // }, [auth]);
+
+  useEffect(() => {
+    if (localStorage.getItem("auth")) {
+      setAuth(JSON.parse(localStorage.getItem("auth")));
+    } else {
+      navigate("/");
+    }
+  }, []);
 
   return (
     <div className="dashboard_page">

@@ -1,6 +1,7 @@
 // @ts-nocheck
 import AuthContext from "@/context/AuthContext";
-import { useLayoutEffect, useState, useContext } from "react";
+import axios from "axios";
+import { useLayoutEffect, useState, useContext, useEffect } from "react";
 import {
   Link,
   useLocation,
@@ -8,6 +9,7 @@ import {
   useNavigation,
   useSearchParams,
 } from "react-router-dom";
+import { toast } from "react-toastify";
 import IntroVideo from "../../../public/intro.mp4";
 
 if (window.isFirstRun === undefined) {
@@ -23,14 +25,17 @@ const StartPage = () => {
     object_name: "",
     object_point_number: "",
   });
+
   const [isLoaded, setIsLoaded] = useState(
     search.get("intro") === "false" ? true : false
   );
 
+  const isForShow = search.get("variant") === "show" ? true : false;
+
   const navigate = useNavigate();
 
-  const authUser = () => {
-    setAuth({
+  const authUser = async () => {
+    const { data } = await axios.post("http://localhost:8081/auth/login", {
       user: {
         full_name: formData.user_full_name,
         position: formData.user_position,
@@ -40,10 +45,15 @@ const StartPage = () => {
         name: formData.object_name,
         point_number: formData.object_point_number,
       },
-      start_time: new Date().getTime(),
-      end_time: null,
     });
-    navigate("/dashboard");
+
+    if (data.status === "success") {
+      setAuth(data.response);
+      localStorage.setItem("auth", JSON.stringify(auth));
+      navigate("/dashboard");
+    } else {
+      toast.error("Ошибка авторизации");
+    }
   };
 
   useLayoutEffect(() => {
@@ -54,6 +64,7 @@ const StartPage = () => {
       }, 8000);
     }
   }, []);
+
   return (
     <div
       className="start_page h-100 w-100"
@@ -102,6 +113,7 @@ const StartPage = () => {
                     user_full_name: e.target.value,
                   }))
                 }
+                disabled={isForShow}
               />
               <input
                 className="form-control mt-3"
@@ -113,6 +125,7 @@ const StartPage = () => {
                     user_position: e.target.value,
                   }))
                 }
+                disabled={isForShow}
               />
               <input
                 className="form-control mt-3"
@@ -124,6 +137,7 @@ const StartPage = () => {
                     user_org_name: e.target.value,
                   }))
                 }
+                disabled={isForShow}
               />
               <input
                 className="form-control mt-3"
@@ -135,6 +149,7 @@ const StartPage = () => {
                     object_name: e.target.value,
                   }))
                 }
+                disabled={isForShow}
               />
               <input
                 className="form-control mt-3"
@@ -146,21 +161,37 @@ const StartPage = () => {
                     object_point_number: e.target.value,
                   }))
                 }
+                disabled={isForShow}
               />
               <div className="d-flex justify-content-center mt-4">
                 {/* <Link to={`/dashboard?full_name=${formData.full_name}`}> */}
-                <button
-                  className="btn btn-primary"
-                  type="button"
-                  style={{
-                    background: "#00AAD4",
-                    borderColor: "#00AAD4;",
-                    textTransform: "uppercase",
-                  }}
-                  onClick={() => authUser()}
-                >
-                  Начать работу
-                </button>
+                {!isForShow ? (
+                  <button
+                    className="btn btn-primary"
+                    type="button"
+                    style={{
+                      background: "#00AAD4",
+                      borderColor: "#00AAD4;",
+                      textTransform: "uppercase",
+                    }}
+                    onClick={() => authUser()}
+                  >
+                    Начать работу
+                  </button>
+                ) : (
+                  <button
+                    className="btn btn-primary"
+                    type="button"
+                    style={{
+                      background: "#00AAD4",
+                      borderColor: "#00AAD4;",
+                      textTransform: "uppercase",
+                    }}
+                    onClick={() => authUser()}
+                  >
+                    Начать новую смену
+                  </button>
+                )}
                 {/* </Link> */}
               </div>
             </div>

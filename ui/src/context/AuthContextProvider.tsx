@@ -8,12 +8,14 @@ const AuthContextProvider: React.FC = ({ children }) => {
   useEffect(() => {
     if (auth) {
       localStorage.setItem("auth", JSON.stringify(auth));
-    } else {
-      if (localStorage.getItem("auth")) {
-        setAuth(JSON.parse(localStorage.getItem("auth")));
-      }
     }
   }, [auth]);
+
+  // useEffect(() => {
+  //   if (localStorage.getItem("auth")) {
+  //     setAuth(JSON.parse(localStorage.getItem("auth")));
+  //   }
+  // }, []);
 
   return (
     <AuthContext.Provider
