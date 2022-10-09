@@ -73,7 +73,7 @@ const DeviceCard: React.FC<IDevice> = ({
     if (!isConnected) {
     }
     socket.on("UI:DEVICE_DATA_RECIEVE", (data) => {
-      if (!isConnected && !isWaiting) setIsConnected(true);
+      //if (!isConnected && !isWaiting) setIsConnected(true);
       if (data.address === address && !isPaused) {
         // console.log("dataaa", data);
         setAwaitTime(0);
