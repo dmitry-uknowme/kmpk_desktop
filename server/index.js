@@ -34,7 +34,7 @@ try {
     if (!fs.existsSync(dateFolder)) {
       fs.mkdirSync(dateFolder);
     }
-    folders = await fsPromises.readdir(`../data/${dateDirName}`);
+    const folders = fs.readdirSync(`../data/${dateDirName}`);
     sessionNumber = folders?.length ? folders?.length + 1 : 1;
   } catch (err) {
     console.log("No session found", err);
