@@ -429,6 +429,7 @@ try {
         `../data/${dateDirName}/${sessionNumber}/auth.json`,
         JSON.stringify(result, null, 2)
       );
+      pointNumber = 0;
       res.status(200).json({ status: "success", response: result });
     } catch (err) {
       res.status(400).json({ status: "error", error: err });

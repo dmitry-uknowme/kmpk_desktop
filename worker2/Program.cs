@@ -11,6 +11,7 @@ using Windows.Storage.Streams;
 using nexus.core;
 using System.Collections;
 using System.Diagnostics;
+using Windows.Media.Protection.PlayReady;
 
 namespace QuickBlueToothLE
 {
@@ -109,7 +110,12 @@ namespace QuickBlueToothLE
             });
            
 
-            socketIOClient.OnDisconnected += ExitApp;
+
+
+            socketIOClient.OnDisconnected +=  (sender, e) =>
+            {
+                Environment.Exit(0);
+            };
 
             Console.ReadLine();
             deviceWatcher.Stop();
