@@ -98,28 +98,33 @@ async function createWindow() {
   });
 }
 
+const runServer = () => {
+  serverScript = nodeChildProcess.spawn("cmd.exe", [
+    "/c",
+    `npx kill-port 8081 && cd C:\\app\\kmpk_desktop1\\server && npm run dev`,
+  ]);
+
+  console.log("[server] PID: " + serverScript.pid);
+
+  serverScript.stdout.on("data", (data) => {
+    console.log("[server] stdout: " + data);
+  });
+
+  serverScript.stderr.on("data", (err) => {
+    console.log("[server] stderr: " + err);
+  });
+
+  serverScript.on("exit", (code) => {
+    console.log("[server] Exit Code: " + code);
+    setTimeout(() => runServer(), 500);
+  });
+};
+
 app
   .whenReady()
   .then(createWindow)
   .then(() => {
-    serverScript = nodeChildProcess.spawn("cmd.exe", [
-      "/c",
-      `npx kill-port 8081 && cd C:\\app\\kmpk_desktop1\\server && npm run dev`,
-    ]);
-
-    console.log("[server] PID: " + serverScript.pid);
-
-    serverScript.stdout.on("data", (data) => {
-      console.log("[server] stdout: " + data);
-    });
-
-    serverScript.stderr.on("data", (err) => {
-      console.log("[server] stderr: " + err);
-    });
-
-    serverScript.on("exit", (code) => {
-      console.log("[server] Exit Code: " + code);
-    });
+    runServer();
   })
   .then(() => {
     setTimeout(() => {
