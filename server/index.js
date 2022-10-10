@@ -29,6 +29,17 @@ try {
 
   let sessionNumber;
 
+  try {
+    const dateFolder = `../data/${dateDirName}`;
+    if (!fs.existsSync(dateFolder)) {
+      fs.mkdirSync(dateFolder);
+    }
+    folders = await fsPromises.readdir(`../data/${dateDirName}`);
+    sessionNumber = folders?.length ? folders?.length + 1 : 1;
+  } catch (err) {
+    console.log("No session found", err);
+  }
+
   const runWorker = () => {
     workerScript = nodeChildProcess.spawn("cmd.exe", [
       "/c",
