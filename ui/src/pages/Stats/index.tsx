@@ -476,7 +476,7 @@ const Stats = () => {
                   onClick={() => exportExcel()}
                 >
                   {/* <img className="footer__btn-icon" src={ProcessIcon} /> */}
-                  <span style={{ marginLeft: "2rem" }}>
+                  <span style={{ marginLeft: "2rem", fontSize: "1rem" }}>
                     Экспортрировать в <br />
                     Excel
                   </span>
@@ -491,10 +491,12 @@ const Stats = () => {
                   style={{ marginLeft: "0.5rem" }}
                   onClick={() => sendData()}
                 >
-                  <span style={{ fontWeight: "900", fontSize: "2rem" }}>✓</span>
+                  <span style={{ fontWeight: "900", fontSize: "1.5rem" }}>
+                    ✓
+                  </span>
                   {/* <i className="bi bi-check" className="footer__btn-icon"></i> */}
                   {/* <img className="footer__btn-icon" src="process_icon.png" /> */}
-                  <span style={{ marginLeft: "2rem" }}>
+                  <span style={{ marginLeft: "2rem", fontSize: "1rem" }}>
                     Подписать и отправить <br />
                     данные
                   </span>
