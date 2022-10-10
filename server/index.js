@@ -408,7 +408,7 @@ try {
         fs.mkdirSync(dateFolder);
       }
       folders = await fsPromises.readdir(`../data/${dateDirName}`);
-      sessionNumber = folders.length + 1;
+      sessionNumber = folders?.length ? folders?.length + 1 : 1;
       const result = {
         date: dateDirName,
         session_number: sessionNumber,
