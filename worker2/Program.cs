@@ -114,6 +114,7 @@ namespace QuickBlueToothLE
 
             socketIOClient.OnDisconnected +=  (sender, e) =>
             {
+                deviceWatcher.Stop();
                 Environment.Exit(0);
             };
 
