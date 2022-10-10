@@ -35,7 +35,7 @@ try {
       fs.mkdirSync(dateFolder);
     }
     const folders = fs.readdirSync(`../data/${dateDirName}`);
-    sessionNumber = folders?.length ? folders?.length + 1 : 1;
+    sessionNumber = folders?.length ? folders?.length : 1;
   } catch (err) {
     console.log("No session found", err);
   }
