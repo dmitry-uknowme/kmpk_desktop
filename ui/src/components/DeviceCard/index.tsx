@@ -56,7 +56,7 @@ const DeviceCard: React.FC<IDevice> = ({
     awaitTimer.current = setInterval(() => {
       setAwaitTime((state) => (state += 1));
     }, 1000);
-    setTimeout(() => tryConnectDevice(), 500);
+    setTimeout(() => tryConnectDevice(), 1500);
   }, []);
 
   const tryConnectDevice = () => {
