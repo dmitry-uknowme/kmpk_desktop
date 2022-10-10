@@ -49,8 +49,12 @@ const StartPage = () => {
 
     if (data.status === "success") {
       setAuth(data.response);
+      // setTimeout(() => {
       localStorage.setItem("auth", JSON.stringify(auth));
-      navigate("/dashboard");
+      // }, 500);
+      setTimeout(() => {
+        navigate("/dashboard");
+      }, 1000);
     } else {
       toast.error("Ошибка авторизации");
     }
