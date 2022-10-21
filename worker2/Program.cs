@@ -13,6 +13,7 @@ using System.Collections;
 using System.Diagnostics;
 using Windows.Media.Protection.PlayReady;
 using System.Threading;
+using System.Net;
 
 namespace QuickBlueToothLE
 {
@@ -51,6 +52,18 @@ namespace QuickBlueToothLE
         public string address { get; set; }
     }
 
+    class AutoSetupDevicesPayload 
+    {
+        public int ground { get; set; }
+        public int hydro { get; set; }
+    }
+
+    class AutoSetupDevicesAddPayload 
+    {
+        public string address { get; set; }
+        public string type { get; set; }
+    }
+
     class Program
     {
         static DeviceInformation device = null;
@@ -71,6 +84,7 @@ namespace QuickBlueToothLE
         static async Task Main(string[] args)
         {
             Console.WriteLine("PID: " + Process.GetCurrentProcess().Id);
+            
             // Query for extra properties you want returned
             string[] requestedProperties = { "System.Devices.Aep.DeviceAddress", "System.Devices.Aep.IsConnected" };
 
@@ -95,6 +109,12 @@ namespace QuickBlueToothLE
 
             await socketIOClient.ConnectAsync(); 
             Console.WriteLine("initt", socketIOClient.ServerUri);
+
+            socketIOClient.On("WORKER:AUTO_SETUP_START", (payload) =>
+            {
+                AutoSetupDevicesPayload autoSetupDevicesPayload = payload.GetValue<AutoSetupDevicesPayload>();
+                AutoSetupDevices(autoSetupDevicesPayload.hydro, autoSetupDevicesPayload.ground);
+            });
 
             socketIOClient.On("WORKER:DEVICE_TRY_CONNECT", (payload) => {
                 DeviceTryConnectPayload deviceTryConnectPayload = payload.GetValue<DeviceTryConnectPayload>();
@@ -215,7 +235,115 @@ namespace QuickBlueToothLE
             catch (Exception ex) { 
                 Console.WriteLine("Unexpected error " + ex.ToString()); 
             }
-        } 
+        }
+
+        private static void AutoSetupDevices(int devicesHydroCount, int devicesGroundCount)
+        {
+            string[] deviceHydroNames = { "BT05" , "MLT"};
+            string[] deviceGroundNames = { "BBB01", "HC-08" };
+
+            int foundDevicesHydroCount = 0;
+            int foundDevicesGroundCount = 0;
+
+            string[] requestedProperties = { "System.Devices.Aep.DeviceAddress", "System.Devices.Aep.IsConnected" };
+            DeviceWatcher watcher =
+                     DeviceInformation.CreateWatcher(
+                             BluetoothLEDevice.GetDeviceSelectorFromPairingState(false), requestedProperties,
+                             DeviceInformationKind.AssociationEndpoint);
+
+            watcher.Added += async (DeviceWatcher sender, DeviceInformation args) => 
+            {
+                string deviceName = args.Name;
+                Console.WriteLine("Added " + args.Name);
+
+                bool isDeviceHydro = deviceHydroNames.Any(deviceName.Contains);
+                bool isDeviceGround = deviceGroundNames.Any(deviceName.Contains);
+
+
+                if (foundDevicesHydroCount == devicesHydroCount && foundDevicesGroundCount == devicesGroundCount)
+                {
+                    Console.WriteLine("da");
+                    sender.Stop();
+                    return;
+                }
+                if (isDeviceHydro || isDeviceGround)
+                {
+                    
+                    
+                    BluetoothLEDevice bluetoothLEDevice = await BluetoothLEDevice.FromIdAsync(args.Id);
+                    
+                    if (bluetoothLEDevice == null)
+                    {
+                        return;
+                    }
+                   
+                    GattDeviceServicesResult result = await bluetoothLEDevice.GetGattServicesAsync();
+                    if (result.Status == GattCommunicationStatus.Success)
+                    {
+                        Console.WriteLine("Pairing succeeded");
+                        var services = result.Services;
+                        foreach (var service in services)
+                        {
+                            if (service.Uuid.Equals(SERVICE_UUID))
+                            {
+                                service.Session.SessionStatusChanged += Service_SessionStatusChanged;
+                                Console.WriteLine("Found service");
+                                GattCharacteristicsResult charactiristicResult = await service.GetCharacteristicsAsync();
+                                if (charactiristicResult.Status == GattCommunicationStatus.Success)
+                                {
+                                   
+                                    var characteristics = charactiristicResult.Characteristics;
+                                    foreach (var characteristic in characteristics)
+                                    {
+                                        Console.WriteLine("---------------");
+                                        Console.WriteLine(characteristic);
+                                        GattCharacteristicProperties properties = characteristic.CharacteristicProperties;
+
+                                        if (properties.HasFlag(GattCharacteristicProperties.Notify))
+                                        {
+                                            Console.WriteLine("Notify property found");
+                                            //characteristic.ReadClientCharacteristicConfigurationDescriptorAsync();
+                                            GattCommunicationStatus status = await characteristic.WriteClientCharacteristicConfigurationDescriptorAsync(
+                        GattClientCharacteristicConfigurationDescriptorValue.Notify);
+                                            
+                                            if (status == GattCommunicationStatus.Success)
+                                            {
+                                                if (isDeviceHydro)
+                                                {
+                                                    foundDevicesHydroCount++;
+                                                }
+                                                else if (isDeviceGround)
+                                                {
+
+                                                    foundDevicesGroundCount++;
+                                                    //Console.Write("find ground " + ConvertMacAddressToString(bluetoothLEDevice.BluetoothAddress) + ", " + foundDevicesGroundCount);
+                                                }
+                                                Console.WriteLine("dev " + deviceName + "   " + ConvertMacAddressToString(bluetoothLEDevice.BluetoothAddress));
+                                                string deviceType = isDeviceHydro ? "Hydro" : "Ground";
+                                                AutoSetupDevicesAddPayload autoSetupDevicesAddPayload = new AutoSetupDevicesAddPayload { address = ConvertMacAddressToString(bluetoothLEDevice.BluetoothAddress), type=deviceType };
+                                                socketIOClient.EmitAsync("WORKER:AUTO_SETUP_ADD", autoSetupDevicesAddPayload);
+                                            }
+                                        }
+
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                }
+               
+            };
+
+            watcher.Updated += (DeviceWatcher sender, DeviceInformationUpdate args) =>
+            {
+                Console.WriteLine("Updated " + args.Id);
+            };
+
+            watcher.Start();
+
+
+        }
 
         private static async void Service_SessionStatusChanged(GattSession gattSession, GattSessionStatusChangedEventArgs args)
         {
@@ -325,7 +453,6 @@ namespace QuickBlueToothLE
                 if (bluetoothLEDevice == null)
                 {
                     Console.WriteLine("No device found with address " + address);
-                    
                     await socketIOClient.EmitAsync("WORKER:DEVICE_DISCONNECTED", deviceDisconnectedJson);
                     return null;
                 }
@@ -361,7 +488,7 @@ namespace QuickBlueToothLE
 
         private static void DeviceWatcher_Added(DeviceWatcher sender, DeviceInformation args)
         {
-            Console.WriteLine(args.Name);
+            //Console.WriteLine(args.Name);
             if (args.Name == "BBB01")
                 device = args;
             //throw new NotImplementedException();
