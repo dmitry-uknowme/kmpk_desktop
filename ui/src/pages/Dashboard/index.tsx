@@ -28,7 +28,7 @@ const DashboardPage = () => {
   const socket = io("ws://localhost:8081");
 
   useEffect(() => {
-    socket.on("WORKER:AUTO_SETUP_ADD", (payload: string) => {
+    socket.on("UI:AUTO_SETUP_ADD", (payload: string) => {
       setAutoSetupDevices((state) => [...state, JSON.parse(payload)]);
       // {
       // type: string;
@@ -143,7 +143,7 @@ const DashboardPage = () => {
                   e.preventDefault();
                   setIsAutoSetupStarted(true);
                   socket.emit(
-                    "WORKER:AUTO_SETUP_START",
+                    "UI:AUTO_SETUP_START",
                     JSON.stringify({
                       hydro: autoSetupDevicesCounts.hydro,
                       ground: autoSetupDevicesCounts.ground,

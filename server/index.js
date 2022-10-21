@@ -155,6 +155,14 @@ try {
       devices = [...devices.filter((d) => d.address !== payload.address), dp];
     });
 
+    socket.on("UI:AUTO_SETUP_START", async (payload) => {
+      socket.broadcast.emit("WORKER:AUTO_SETUP_START", payload);
+    });
+
+    socket.on("WORKER:AUTO_SETUP_ADD", async (payload) => {
+      socket.broadcast.emit("UI:AUTO_SETUP_ADD", payload);
+    });
+
     socket.on("WORKER:DEVICE_DATA_RECIEVE", async (data) => {
       data = JSON.parse(data);
       //console.log("dadadadada", devices);
