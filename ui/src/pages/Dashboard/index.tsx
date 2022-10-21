@@ -144,8 +144,10 @@ const DashboardPage = () => {
                   setIsAutoSetupStarted(true);
                   socket.emit(
                     "WORKER:AUTO_SETUP_START",
-                    autoSetupDevicesCounts.hydro,
-                    autoSetupDevicesCounts.ground
+                    JSON.stringify({
+                      hydro: autoSetupDevicesCounts.hydro,
+                      ground: autoSetupDevicesCounts.ground,
+                    })
                   );
                 }}
               >
