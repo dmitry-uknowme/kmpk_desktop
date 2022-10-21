@@ -7,30 +7,34 @@ import UserIcon from "../../../public/user_icon.png";
 import SettingsIcon from "../../../public/settings_icon.png";
 import ResultIcon from "../../../public/result_icon.png";
 import AuthContext from "@/context/AuthContext";
+import io from "socket.io-client";
 
 const settings = window.api.getSettings();
 
 const DashboardPage = () => {
+  const [isModalAutoSetupVisible, setIsModalAutoSetupVisible] = useState(false);
+  const [autoSetupDevicesCounts, setAutoSetupDevicesCounts] = useState({
+    hydro: 2,
+    ground: 1,
+  });
+  const [autoSetupDevices, setAutoSetupDevices] = useState([]);
+  const [isAutoSetupStarted, setIsAutoSetupStarted] = useState(false);
   const { auth, setAuth } = useContext(AuthContext);
   const [search, setSearch] = useSearchParams();
   const fullName = auth?.user?.full_name;
   const [isShowMenu, setIsShowMenu] = useState<boolean>(false);
   const navigate = useNavigate();
 
-  // useEffect(() => {
-  //   console.log("aaa", auth);
-  //   if (!auth) {
-  //     navigate("/");
-  //   }
-  // }, []);
-
-  // useEffect(() => {
-  //   if (auth) {
-  //     localStorage.setItem("auth", JSON.stringify(auth));
-  //   }
-  // }, [auth]);
+  const socket = io("ws://localhost:8081");
 
   useEffect(() => {
+    socket.on("WORKER:AUTO_SETUP_ADD", (payload: string) => {
+      setAutoSetupDevices((state) => [...state, JSON.parse(payload)]);
+      // {
+      // type: string;
+      // address: string;
+      // }
+    });
     if (localStorage.getItem("auth")) {
       setAuth(JSON.parse(localStorage.getItem("auth")));
     } else {
@@ -53,7 +57,13 @@ const DashboardPage = () => {
             {settings?.devices?.map((device) => (
               <div className="mb-3">
                 <label htmlFor="exampleInputEmail1" className="form-label">
-                  Устройство №{device.number}
+                  Датчик №{device.number} (
+                  {device.type === "Hydro"
+                    ? "Водород"
+                    : device.type === "Ground"
+                    ? "Грунт"
+                    : ""}
+                  )
                 </label>
                 <input
                   type="email"
@@ -70,14 +80,23 @@ const DashboardPage = () => {
                 Путь для сохранения данных замеров
               </label>
               <input
-                type="email"
                 class="form-control"
                 id="exampleInputEmail1"
                 aria-describedby="emailHelp"
                 value={settings.saveFolder}
               />
             </div>
-            <div class="form-check form-switch">
+            <div
+              className="btn btn-primary w-100"
+              onClick={() => {
+                setIsShowMenu(false);
+                setIsModalAutoSetupVisible(true);
+              }}
+            >
+              Автоматическая настройка датчиков
+            </div>
+            <div className="btn btn-success mt-4 w-100">Сохранить</div>
+            {/* <div class="form-check form-switch">
               <input
                 class="form-check-input"
                 type="checkbox"
@@ -86,14 +105,139 @@ const DashboardPage = () => {
               <label class="form-check-label" for="flexSwitchCheckChecked">
                 Автоматически определить устройства
               </label>
-            </div>
-            <div className="btn btn-success mt-4">Сохранить</div>
-            <div className="row" style={{ marginTop: "5rem" }}>
+            </div> */}
+
+            {/* <div className="row" style={{ marginTop: "5rem" }}>
               <div className="btn btn-primary">Обновить приложение</div>
-            </div>
+            </div> */}
           </form>
         </Offcanvas.Body>
       </Offcanvas>
+      {isModalAutoSetupVisible && (
+        <div className="modal modal-lg d-block">
+          <div
+            className="modal-overlay"
+            style={{
+              width: "100%",
+              height: "100%",
+              position: "fixed",
+              top: 0,
+              left: 0,
+              background: "rgba(0,0,0,0.5)",
+            }}
+          ></div>
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title">Автоматическая настройка датчиков</h5>
+                <button
+                  type="button"
+                  class="btn-close"
+                  data-bs-dismiss="modal"
+                  aria-label="Close"
+                  onClick={() => setIsModalAutoSetupVisible(false)}
+                ></button>
+              </div>
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  setIsAutoSetupStarted(true);
+                  socket.emit(
+                    "WORKER:AUTO_SETUP_START",
+                    JSON.stringify({
+                      hydro: autoSetupDevicesCounts.hydro,
+                      ground: autoSetupDevicesCounts.ground,
+                    })
+                  );
+                }}
+              >
+                <div class="modal-body">
+                  {isAutoSetupStarted ? (
+                    <>
+                      {new Array(autoSetupDevicesCounts.hydro)
+                        .fill(1)
+                        .map((dev, num) => (
+                          <div className="form-group d-flex align-items-center mt-3">
+                            <span
+                              style={{ marginRight: "0.5rem", fontWeight: 700 }}
+                            >
+                              {num + 1}
+                            </span>
+                            <input
+                              type="text"
+                              className="form-control"
+                              value={
+                                autoSetupDevices.filter(
+                                  (d) => d.type === "Hydro"
+                                )[num]
+                              }
+                              disabled
+                            />
+                            <span className="text-success">Водород</span>
+                          </div>
+                        ))}
+                      {new Array(autoSetupDevicesCounts.ground)
+                        .fill(1)
+                        .map((dev, num) => (
+                          <div className="form-group d-flex align-items-center mt-3">
+                            <span
+                              style={{ marginRight: "0.5rem", fontWeight: 700 }}
+                            >
+                              {autoSetupDevicesCounts.hydro + num + 1}
+                            </span>
+                            <input
+                              type="text"
+                              className="form-control"
+                              value={
+                                autoSetupDevices.filter(
+                                  (d) => d.type === "Ground"
+                                )[num]
+                              }
+                              disabled
+                            />
+                            <span className="text-success">Грунт</span>
+                          </div>
+                        ))}
+                    </>
+                  ) : (
+                    <>
+                      <div className="form-group">
+                        <label>Количество датчиков водорода</label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          value={autoSetupDevicesCounts.ground}
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label>Количество датчиков грунта</label>
+                        <input
+                          type="text"
+                          value={autoSetupDevicesCounts.ground}
+                          className="form-control"
+                        />
+                      </div>
+                    </>
+                  )}
+                </div>
+                <div class="modal-footer">
+                  <button
+                    type="button"
+                    class="btn btn-secondary"
+                    data-bs-dismiss="modal"
+                    onClick={() => setIsModalAutoSetupVisible(false)}
+                  >
+                    Закрыть
+                  </button>
+                  <button type="submit" class="btn btn-primary">
+                    Начать
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="container-fluid">
         <div className="header w-100">
           <div className="row w-100 align-items-center">
