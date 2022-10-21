@@ -29,6 +29,17 @@ try {
 
   let sessionNumber;
 
+  try {
+    const dateFolder = `../data/${dateDirName}`;
+    if (!fs.existsSync(dateFolder)) {
+      fs.mkdirSync(dateFolder);
+    }
+    const folders = fs.readdirSync(`../data/${dateDirName}`);
+    sessionNumber = folders?.length ? folders?.length : 1;
+  } catch (err) {
+    console.log("No session found", err);
+  }
+
   const runWorker = () => {
     workerScript = nodeChildProcess.spawn("cmd.exe", [
       "/c",
@@ -408,7 +419,7 @@ try {
         fs.mkdirSync(dateFolder);
       }
       folders = await fsPromises.readdir(`../data/${dateDirName}`);
-      sessionNumber = folders.length + 1;
+      sessionNumber = folders?.length ? folders?.length + 1 : 1;
       const result = {
         date: dateDirName,
         session_number: sessionNumber,
@@ -429,6 +440,7 @@ try {
         `../data/${dateDirName}/${sessionNumber}/auth.json`,
         JSON.stringify(result, null, 2)
       );
+      pointNumber = 0;
       res.status(200).json({ status: "success", response: result });
     } catch (err) {
       res.status(400).json({ status: "error", error: err });
