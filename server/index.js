@@ -44,7 +44,7 @@ try {
     workerScript = nodeChildProcess.spawn("cmd.exe", [
       "/c",
       "start",
-      "C:\\app\\kmpk_desktop1\\worker2\\bin\\Debug\\BluetoothWorker.exe",
+      "C:\\app\\kmpk_desktop1\\worker2\\bin\\Release\\BluetoothWorker.exe",
     ]);
 
     console.log("[worker] PID: " + workerScript.pid);
