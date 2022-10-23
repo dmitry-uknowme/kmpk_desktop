@@ -9,6 +9,8 @@ import ResultIcon from "../../../public/result_icon.png";
 import AuthContext from "@/context/AuthContext";
 import io from "socket.io-client";
 
+const socket = io("ws://localhost:8081");
+
 const settings = window.api.getSettings();
 
 const DashboardPage = () => {
@@ -24,8 +26,6 @@ const DashboardPage = () => {
   const fullName = auth?.user?.full_name;
   const [isShowMenu, setIsShowMenu] = useState<boolean>(false);
   const navigate = useNavigate();
-
-  const socket = io("ws://localhost:8081");
 
   useEffect(() => {
     socket.on("UI:AUTO_SETUP_ADD", (payload: string) => {
@@ -135,13 +135,17 @@ const DashboardPage = () => {
                   class="btn-close"
                   data-bs-dismiss="modal"
                   aria-label="Close"
-                  onClick={() => setIsModalAutoSetupVisible(false)}
+                  onClick={() => {
+                    setIsModalAutoSetupVisible(false);
+                    setIsAutoSetupStarted(false);
+                  }}
                 ></button>
               </div>
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
                   setIsAutoSetupStarted(true);
+                  console.log("e", e, socket);
                   socket.emit(
                     "UI:AUTO_SETUP_START",
                     JSON.stringify({
@@ -225,7 +229,10 @@ const DashboardPage = () => {
                     type="button"
                     class="btn btn-secondary"
                     data-bs-dismiss="modal"
-                    onClick={() => setIsModalAutoSetupVisible(false)}
+                    onClick={() => {
+                      setIsModalAutoSetupVisible(false);
+                      setIsAutoSetupStarted(false);
+                    }}
                   >
                     Закрыть
                   </button>

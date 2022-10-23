@@ -8,6 +8,7 @@ using Windows.Devices.Bluetooth;
 using Windows.Devices.Bluetooth.GenericAttributeProfile;
 using Windows.Devices.Enumeration;
 using Windows.Storage.Streams;
+using Windows.Devices.Radios;
 using nexus.core;
 using System.Collections;
 using System.Diagnostics;
@@ -81,37 +82,52 @@ namespace QuickBlueToothLE
             }
         });
 
+        
+
+        // Query for extra properties you want returned
+        public static string[] requestedProperties = { "System.Devices.Aep.DeviceAddress", "System.Devices.Aep.IsConnected" };
+
+        public static DeviceWatcher deviceWatcher =
+                    DeviceInformation.CreateWatcher(
+                            BluetoothLEDevice.GetDeviceSelectorFromPairingState(false), requestedProperties,
+                            DeviceInformationKind.AssociationEndpoint);
+
         static async Task Main(string[] args)
         {
             Console.WriteLine("PID: " + Process.GetCurrentProcess().Id);
+            var radio = await Radio.RequestAccessAsync();
             
-            // Query for extra properties you want returned
-            string[] requestedProperties = { "System.Devices.Aep.DeviceAddress", "System.Devices.Aep.IsConnected" };
 
-            DeviceWatcher deviceWatcher =
-                        DeviceInformation.CreateWatcher(
-                                BluetoothLEDevice.GetDeviceSelectorFromPairingState(false), requestedProperties,
-                                DeviceInformationKind.AssociationEndpoint);
+            
+            /*Console.WriteLine("radd " + radio);
+            BluetoothAdapter bluetoothAdapter = await BluetoothAdapter.GetDefaultAsync();
+            //Console.WriteLine(Radio.RequestAccessAsync());
+            var bluetoothRadio = await bluetoothAdapter.GetRadioAsync();
+            Console.WriteLine("Disabling");
+            await bluetoothRadio.SetStateAsync(RadioState.Off);
+            Thread.Sleep(5000);
+            await bluetoothRadio.SetStateAsync(RadioState.On);
+            Console.WriteLine("Enabling");*/
 
-            // Register event handlers before starting the watcher.
-            // Added, Updated and Removed are required to get all nearby devices
+
+
             deviceWatcher.Added += DeviceWatcher_Added;
             deviceWatcher.Updated += DeviceWatcher_Updated;
             deviceWatcher.Removed += DeviceWatcher_Removed;
-
-            // EnumerationCompleted and Stopped are optional to implement.
             deviceWatcher.EnumerationCompleted += DeviceWatcher_EnumerationCompleted;
             deviceWatcher.Stopped += DeviceWatcher_Stopped;
 
             // Start the watcher.
+            await DisconnectAllDevices();
             deviceWatcher.Start();
             
 
             await socketIOClient.ConnectAsync(); 
-            Console.WriteLine("initt", socketIOClient.ServerUri);
+            Console.WriteLine("init", socketIOClient.ServerUri);
 
             socketIOClient.On("WORKER:AUTO_SETUP_START", (payload) =>
             {
+                Console.WriteLine("pppp " + payload.ToString());
                 AutoSetupDevicesPayload autoSetupDevicesPayload = payload.GetValue<AutoSetupDevicesPayload>();
                 AutoSetupDevices(autoSetupDevicesPayload.hydro, autoSetupDevicesPayload.ground);
             });
@@ -147,6 +163,23 @@ namespace QuickBlueToothLE
         private static void ExitApp(string str)
         {
             Environment.Exit(0);
+        }
+
+        private static async Task DisconnectAllDevices()
+        {
+            
+            DeviceInformationCollection pairedBTDevices = await DeviceInformation.FindAllAsync(BluetoothLEDevice.GetDeviceSelectorFromPairingState(true));
+            foreach(var device in pairedBTDevices)
+            {
+                try
+                {
+                    await device.Pairing.UnpairAsync();
+                }
+                catch (Exception ex) 
+                { 
+                    Console.WriteLine("Error unpair device " + ex.ToString() + device.Id);
+                };
+            }
         }
 
         private static string ConvertMacAddressToString(ulong macAddress)
@@ -237,8 +270,10 @@ namespace QuickBlueToothLE
             }
         }
 
-        private static void AutoSetupDevices(int devicesHydroCount, int devicesGroundCount)
+        private static async void AutoSetupDevices(int devicesHydroCount, int devicesGroundCount)
         {
+            await DisconnectAllDevices();
+            Console.WriteLine("a", devicesHydroCount, devicesGroundCount);
             string[] deviceHydroNames = { "BT05" , "MLT"};
             string[] deviceGroundNames = { "BBB01", "HC-08" };
 
@@ -246,6 +281,9 @@ namespace QuickBlueToothLE
             int foundDevicesGroundCount = 0;
 
             string[] requestedProperties = { "System.Devices.Aep.DeviceAddress", "System.Devices.Aep.IsConnected" };
+
+            //deviceWatcher.Stop();
+            
             DeviceWatcher watcher =
                      DeviceInformation.CreateWatcher(
                              BluetoothLEDevice.GetDeviceSelectorFromPairingState(false), requestedProperties,

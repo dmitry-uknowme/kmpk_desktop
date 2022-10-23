@@ -156,6 +156,7 @@ try {
     });
 
     socket.on("UI:AUTO_SETUP_START", async (payload) => {
+      console.log("setup", payload);
       socket.broadcast.emit("WORKER:AUTO_SETUP_START", payload);
     });
 
