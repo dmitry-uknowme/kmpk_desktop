@@ -12,6 +12,8 @@ import AutoSetupModal from "@/components/AutoSetupModal";
 
 const socket = io("ws://localhost:8081");
 
+const socket = io("ws://localhost:8081");
+
 const settings = window.api.getSettings();
 
 const DashboardPage = () => {
