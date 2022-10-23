@@ -127,9 +127,9 @@ namespace QuickBlueToothLE
 
             socketIOClient.On("WORKER:AUTO_SETUP_START", (payload) =>
             {
-                Console.WriteLine("pppp " + payload.ToString());
                 AutoSetupDevicesPayload autoSetupDevicesPayload = payload.GetValue<AutoSetupDevicesPayload>();
                 AutoSetupDevices(autoSetupDevicesPayload.hydro, autoSetupDevicesPayload.ground);
+                
             });
 
             socketIOClient.On("WORKER:DEVICE_TRY_CONNECT", (payload) => {
@@ -167,7 +167,7 @@ namespace QuickBlueToothLE
 
         private static async Task DisconnectAllDevices()
         {
-            
+            Console.WriteLine("Отключение от всех устройств...");
             DeviceInformationCollection pairedBTDevices = await DeviceInformation.FindAllAsync(BluetoothLEDevice.GetDeviceSelectorFromPairingState(true));
             foreach(var device in pairedBTDevices)
             {
