@@ -156,11 +156,16 @@ try {
     });
 
     socket.on("UI:AUTO_SETUP_START", async (payload) => {
+      console.log("setup", payload);
       socket.broadcast.emit("WORKER:AUTO_SETUP_START", payload);
     });
 
     socket.on("WORKER:AUTO_SETUP_ADD", async (payload) => {
       socket.broadcast.emit("UI:AUTO_SETUP_ADD", payload);
+    });
+
+    socket.on("WORKER:AUTO_SETUP_FINISH", async (payload) => {
+      socket.broadcast.emit("UI:AUTO_SETUP_FINISH", payload);
     });
 
     socket.on("WORKER:DEVICE_DATA_RECIEVE", async (data) => {
