@@ -12,18 +12,10 @@ import AutoSetupModal from "@/components/AutoSetupModal";
 
 const socket = io("ws://localhost:8081");
 
-const socket = io("ws://localhost:8081");
-
 const settings = window.api.getSettings();
 
 const DashboardPage = () => {
   const [isModalAutoSetupVisible, setIsModalAutoSetupVisible] = useState(false);
-  const [autoSetupDevicesCounts, setAutoSetupDevicesCounts] = useState({
-    hydro: 2,
-    ground: 1,
-  });
-  const [autoSetupDevices, setAutoSetupDevices] = useState([]);
-  const [isAutoSetupStarted, setIsAutoSetupStarted] = useState(false);
   const { auth, setAuth } = useContext(AuthContext);
   const [search, setSearch] = useSearchParams();
   const fullName = auth?.user?.full_name;
@@ -31,13 +23,6 @@ const DashboardPage = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    socket.on("UI:AUTO_SETUP_ADD", (payload: string) => {
-      setAutoSetupDevices((state) => [...state, JSON.parse(payload)]);
-      // {
-      // type: string;
-      // address: string;
-      // }
-    });
     if (localStorage.getItem("auth")) {
       setAuth(JSON.parse(localStorage.getItem("auth")));
     } else {
@@ -181,12 +166,12 @@ const DashboardPage = () => {
               </div>
             ))}
 
-            <div className="col-md-3 h-100">
+            {/* <div className="col-md-3 h-100">
               <div
                 className="card h-100"
                 style={{ borderStyle: "dashed", maxHeight: 322 }}
               ></div>
-            </div>
+            </div> */}
           </div>
         </main>
         <footer className="footer" style={{ marginTop: "6rem" }}>

@@ -211,14 +211,12 @@ const api = {
     );
     // console.log('beforeeee', settings)
     settings[key] = value;
+    console.log("ss", settings);
     // console.log('afterrrr', settings)
-    fs.writeFileSync(
-      `${APP_DIR}/settings.json`,
-      JSON.stringify(settings, null, 2)
-    );
+    fs.writeFileSync(`${APP_DIR}/settings.json`, JSON.stringify(settings));
     // app.relaunch()
 
-    electron.BrowserWindow.getAllWindows()[0].reload();
+    // electron.BrowserWindow.getAllWindows()[0].reload();
   },
 
   restartApp: () => {

@@ -170,6 +170,8 @@ namespace QuickBlueToothLE
         {
             Console.WriteLine("Отключение от всех устройств...");
             DeviceInformationCollection pairedBTDevices = await DeviceInformation.FindAllAsync(BluetoothLEDevice.GetDeviceSelectorFromPairingState(true));
+            DeviceInformationCollection connectedBTDevices = await DeviceInformation.FindAllAsync(BluetoothLEDevice.GetDeviceSelectorFromConnectionStatus(BluetoothConnectionStatus.Connected));
+            Console.WriteLine("Paired " + JsonSerializer.Serialize(connectedBTDevices.Count) + " " + JsonSerializer.Serialize(pairedBTDevices.Count));
             foreach(var device in pairedBTDevices)
             {
                 try
@@ -273,6 +275,7 @@ namespace QuickBlueToothLE
 
         private static async void AutoSetupDevices(int devicesHydroCount, int devicesGroundCount)
         {
+
             await DisconnectAllDevices();
             Console.WriteLine("a", devicesHydroCount, devicesGroundCount);
             string[] deviceHydroNames = { "BT05" , "MLT"};
@@ -293,8 +296,7 @@ namespace QuickBlueToothLE
             watcher.Added += async (DeviceWatcher sender, DeviceInformation args) => 
             {
                 string deviceName = args.Name;
-                Console.WriteLine("Added " + args.Name);
-
+                
                 bool isDeviceHydro = deviceHydroNames.Any(deviceName.Contains);
                 bool isDeviceGround = deviceGroundNames.Any(deviceName.Contains);
 
@@ -302,13 +304,14 @@ namespace QuickBlueToothLE
                 if (foundDevicesHydroCount == devicesHydroCount && foundDevicesGroundCount == devicesGroundCount)
                 {
                     Console.WriteLine("da");
+                    await socketIOClient.EmitAsync("WORKER:AUTO_SETUP_FINISH");
                     sender.Stop();
                     return;
                 }
                 if (isDeviceHydro || isDeviceGround)
                 {
-                    
-                    
+                    Console.WriteLine("Added " + args.Name);
+
                     BluetoothLEDevice bluetoothLEDevice = await BluetoothLEDevice.FromIdAsync(args.Id);
                     
                     if (bluetoothLEDevice == null)
@@ -360,7 +363,7 @@ namespace QuickBlueToothLE
                                                 Console.WriteLine("dev " + deviceName + "   " + ConvertMacAddressToString(bluetoothLEDevice.BluetoothAddress));
                                                 string deviceType = isDeviceHydro ? "Hydro" : "Ground";
                                                 AutoSetupDevicesAddPayload autoSetupDevicesAddPayload = new AutoSetupDevicesAddPayload { address = ConvertMacAddressToString(bluetoothLEDevice.BluetoothAddress), type=deviceType };
-                                                socketIOClient.EmitAsync("WORKER:AUTO_SETUP_ADD", autoSetupDevicesAddPayload);
+                                                await socketIOClient.EmitAsync("WORKER:AUTO_SETUP_ADD", autoSetupDevicesAddPayload);
                                             }
                                         }
 

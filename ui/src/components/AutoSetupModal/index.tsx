@@ -1,6 +1,7 @@
 // @ts-nocheck
 
 import React, { useState, useEffect } from "react";
+import { toast } from "react-toastify";
 import io from "socket.io-client";
 
 interface AutoSetupModalProps {
@@ -13,6 +14,7 @@ interface FoundDevice {
   type: string;
 }
 
+const settings = window.api.getSettings();
 const socket = io("ws://localhost:8081");
 
 const AutoSetupModal: React.FC<AutoSetupModalProps> = ({
@@ -27,15 +29,39 @@ const AutoSetupModal: React.FC<AutoSetupModalProps> = ({
   const [foundDevices, setFoundDevices] = useState<FoundDevice[]>([]);
 
   useEffect(() => {
-    socket.on("UI:AUTO_SETUP_ADD", (payload) => {
-      setFoundDevices((state) => [...state, payload]);
-    });
-    socket.on("UI:AUTO_SETUP_FINISH", (payload) => {
+    if (
+      foundDevices.length ===
+      searchDevicesCount.hydro + searchDevicesCount.ground
+    ) {
+      console.log("devvvvv", foundDevices);
       window.api.changeSettingsByKey(
         "devices",
-        JSON.stringify(foundDevices.map((d) => ({ ...d, point_number: 0 })))
+        foundDevices
+          .sort((a, b) => (a.type === "Hydro" ? 1 : -1))
+          .map((d, id) => ({ ...d, number: id + 1, point_number: 0 }))
       );
+      toast.success("Автоматическая настройка датчиков завершена");
+      setFoundDevices([]);
+    }
+  }, [foundDevices, searchDevicesCount]);
+
+  useEffect(() => {
+    socket.on("UI:AUTO_SETUP_ADD", (payload) => {
+      //
+      setFoundDevices((state) => [...state, payload]);
     });
+    // socket.on("UI:AUTO_SETUP_FINISH", (payload) => {
+    //   console.log("devvvvv", foundDevices);
+    //   window.api.changeSettingsByKey(
+    //     "devices",
+    //     foundDevices.map((d) => ({ ...d, point_number: 0 }))
+    //     // foundDevices
+    //     //   // .sort((a, b) => (a.type === "Hydro" ? 1 : -1))
+    //     //   .map((d, id) => ({ ...d, number: id + 1, point_number: 0 }))
+    //   );
+    //   toast.success("Автоматическая настройка датчиков завершена");
+    //   setFoundDevices([]);
+    // });
   }, []);
 
   return (
@@ -68,100 +94,117 @@ const AutoSetupModal: React.FC<AutoSetupModalProps> = ({
           <form
             onSubmit={(e) => {
               e.preventDefault();
+              setFoundDevices([]);
               setIsSearchStarted(true);
-              socket.emit("UI:AUTO_SETUP_START", {
-                hydro: searchDevicesCount.hydro,
-                ground: searchDevicesCount.ground,
-              });
+              setTimeout(() => {
+                settings.devices.map((device) =>
+                  socket.emit("UI:DEVICE_TRY_DISCONNECT", {
+                    address: device.address,
+                  })
+                );
+              }, 500);
+              setTimeout(
+                () =>
+                  socket.emit("UI:AUTO_SETUP_START", {
+                    hydro: searchDevicesCount.hydro,
+                    ground: searchDevicesCount.ground,
+                  }),
+                1000
+              );
             }}
           >
             <div className="modal-body">
-              {isSearchStarted ? (
-                <>
-                  {new Array(searchDevicesCount.hydro)
-                    .fill(1)
-                    .map((dev, num) => (
-                      <div className="form-group d-flex align-items-center mt-3">
-                        <span
-                          style={{ marginRight: "0.5rem", fontWeight: 700 }}
-                        >
-                          {num + 1}
-                        </span>
-                        <input
-                          type="text"
-                          className="form-control"
-                          value={
-                            foundDevices?.filter((d) => d.type === "Hydro")[num]
-                          }
-                          disabled
-                          style={{ width: 200 }}
-                        />
-                        <span
-                          className="text-success"
-                          style={{ marginLeft: "0.5rem" }}
-                        >
-                          Водород
-                        </span>
-                      </div>
-                    ))}
-                  {new Array(searchDevicesCount.ground)
-                    .fill(1)
-                    .map((dev, num) => (
-                      <div className="form-group d-flex align-items-center mt-3">
-                        <span
-                          style={{ marginRight: "0.5rem", fontWeight: 700 }}
-                        >
-                          {searchDevicesCount.hydro + num + 1}
-                        </span>
-                        <input
-                          type="text"
-                          className="form-control"
-                          value={
-                            foundDevices.filter((d) => d.type === "Ground")[num]
-                          }
-                          disabled
-                          style={{ width: 200 }}
-                        />
-                        <span
-                          className="text-success"
-                          style={{ marginLeft: "0.5rem" }}
-                        >
-                          Грунт
-                        </span>
-                      </div>
-                    ))}
-                </>
-              ) : (
-                <>
-                  <div className="form-group">
-                    <label>Количество датчиков водорода</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      value={searchDevicesCount.hydro}
-                      onChange={(e) =>
-                        setSearchDevicesCount((state) => ({
-                          ...state,
-                          hydro: parseInt(e.target.value),
-                        }))
-                      }
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Количество датчиков грунта</label>
-                    <input
-                      type="text"
-                      value={searchDevicesCount.ground}
-                      onChange={(e) =>
-                        setSearchDevicesCount((state) => ({
-                          ...state,
-                          ground: parseInt(e.target.value),
-                        }))
-                      }
-                      className="form-control"
-                    />
-                  </div>
-                </>
+              <>
+                <div className="form-group">
+                  <label>Количество датчиков водорода</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={searchDevicesCount.hydro}
+                    onChange={(e) =>
+                      setSearchDevicesCount((state) => ({
+                        ...state,
+                        hydro: parseInt(e.target.value),
+                      }))
+                    }
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Количество датчиков грунта</label>
+                  <input
+                    type="text"
+                    value={searchDevicesCount.ground}
+                    onChange={(e) =>
+                      setSearchDevicesCount((state) => ({
+                        ...state,
+                        ground: parseInt(e.target.value),
+                      }))
+                    }
+                    className="form-control"
+                  />
+                </div>
+              </>
+              {isSearchStarted && (
+                <div className="mt-3">
+                  <>
+                    {new Array(searchDevicesCount.hydro)
+                      .fill(1)
+                      .map((dev, num) => (
+                        <div className="form-group d-flex align-items-center mt-3">
+                          <span
+                            style={{ marginRight: "0.5rem", fontWeight: 700 }}
+                          >
+                            {num + 1}
+                          </span>
+                          <input
+                            type="text"
+                            className="form-control"
+                            value={
+                              foundDevices?.filter((d) => d.type === "Hydro")[
+                                num
+                              ]?.address
+                            }
+                            disabled
+                            style={{ width: 200 }}
+                          />
+                          <span
+                            className="text-success"
+                            style={{ marginLeft: "0.5rem" }}
+                          >
+                            Водород
+                          </span>
+                        </div>
+                      ))}
+                    {new Array(searchDevicesCount.ground)
+                      .fill(1)
+                      .map((dev, num) => (
+                        <div className="form-group d-flex align-items-center mt-3">
+                          <span
+                            style={{ marginRight: "0.5rem", fontWeight: 700 }}
+                          >
+                            {searchDevicesCount.hydro + num + 1}
+                          </span>
+                          <input
+                            type="text"
+                            className="form-control"
+                            value={
+                              foundDevices.filter((d) => d.type === "Ground")[
+                                num
+                              ]?.address
+                            }
+                            disabled
+                            style={{ width: 200 }}
+                          />
+                          <span
+                            className="text-success"
+                            style={{ marginLeft: "0.5rem" }}
+                          >
+                            Грунт
+                          </span>
+                        </div>
+                      ))}
+                  </>
+                </div>
               )}
             </div>
             <div className="modal-footer">
