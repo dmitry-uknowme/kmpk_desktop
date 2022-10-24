@@ -15,6 +15,10 @@ using System.Diagnostics;
 using Windows.Media.Protection.PlayReady;
 using System.Threading;
 using System.Net;
+using Windows.Devices.Radios;
+using System.IO;
+using System.Collections.ObjectModel;
+//using System.Management.Automation.Powershell;
 
 namespace QuickBlueToothLE
 {
@@ -97,7 +101,6 @@ namespace QuickBlueToothLE
             Console.WriteLine("PID: " + Process.GetCurrentProcess().Id);
             var radio = await Radio.RequestAccessAsync();
             
-
             
             /*Console.WriteLine("radd " + radio);
             BluetoothAdapter bluetoothAdapter = await BluetoothAdapter.GetDefaultAsync();
@@ -169,6 +172,50 @@ namespace QuickBlueToothLE
         private static async Task DisconnectAllDevices()
         {
             Console.WriteLine("Отключение от всех устройств...");
+
+            ProcessStartInfo processStartInfo = new ProcessStartInfo
+            {
+                WindowStyle = ProcessWindowStyle.Hidden,
+            };
+
+            /*using (PowerShell PowerShellInst = PowerShell.Create())
+            {
+                string path = System.IO.Path.GetDirectoryName(@"C:\Temp\") + "\\Get-EventLog.ps1";
+                if (!string.IsNullOrEmpty(path))
+                    PowerShellInst.AddScript(System.IO.File.ReadAllText(path));
+
+                Collection<PSObject> PSOutput = PowerShellInst.Invoke();
+                foreach (PSObject obj in PSOutput)
+                {
+                    if (obj != null)
+                    {
+                        Console.Write(obj.Properties["EntryType"].Value.ToString() + " - ");
+                        Console.Write(obj.Properties["Source"].Value.ToString() + " - ");
+                        Console.WriteLine(obj.Properties["Message"].Value.ToString() + " - ");
+                    }
+                }
+                Console.WriteLine("Done");
+                Console.Read();
+            }*/
+
+            //Process btOffProcess = new Process { StartInfo = new ProcessStartInfo { WindowStyle= ProcessWindowStyle.Maximized,FileName = "powershell", Arguments= "-file C://app//kmpk_desktop1//scripts//bt.ps1" } };
+            // btOffProcess.Start();
+
+            /* btOffProcess.ErrorDataReceived += async (object sender, DataReceivedEventArgs e) =>
+             {
+                 Console.WriteLine("o " + e.Data.ToString());
+             };
+             btOffProcess.OutputDataReceived += async (object sender, DataReceivedEventArgs e) =>
+             {
+                 Console.WriteLine("o " + e.Data.ToString());
+             };
+             //Process btOffProcess = Process.Start("powershell", "-file C:/app/kmpk_desktop1/scripts/bt.ps1");
+             btOffProcess.WaitForExit();*/
+           
+            //Process btOffProcess = Process.Start("start C:\\app\\kmpk_desktop1\\scripts\\btOff.bat");
+            //btOffProcess.WaitForExit();
+            Console.WriteLine("da");
+            return;
             DeviceInformationCollection pairedBTDevices = await DeviceInformation.FindAllAsync(BluetoothLEDevice.GetDeviceSelectorFromPairingState(true));
             DeviceInformationCollection connectedBTDevices = await DeviceInformation.FindAllAsync(BluetoothLEDevice.GetDeviceSelectorFromConnectionStatus(BluetoothConnectionStatus.Connected));
             Console.WriteLine("Paired " + JsonSerializer.Serialize(connectedBTDevices.Count) + " " + JsonSerializer.Serialize(pairedBTDevices.Count));
@@ -333,7 +380,6 @@ namespace QuickBlueToothLE
                                 GattCharacteristicsResult charactiristicResult = await service.GetCharacteristicsAsync();
                                 if (charactiristicResult.Status == GattCommunicationStatus.Success)
                                 {
-                                   
                                     var characteristics = charactiristicResult.Characteristics;
                                     foreach (var characteristic in characteristics)
                                     {

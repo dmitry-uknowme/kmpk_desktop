@@ -1,0 +1,1 @@
+powershell -file C:\app\kmpk_desktop1\scripts\bt.ps1 -BluetoothStatus Off
