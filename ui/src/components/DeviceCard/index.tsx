@@ -234,7 +234,7 @@ const DeviceCard: React.FC<IDevice> = ({
                 <div className="d-flex align-items-center">
                   <input
                     className="form-control"
-                    style={{ width: 40, height: 26, marginRight: "0.5rem" }}
+                    style={{ width: 50, height: 26, marginRight: "0.5rem" }}
                     value={isPaused ? "" : data?.H2 || ""}
                     disabled
                   />
@@ -358,7 +358,7 @@ const DeviceCard: React.FC<IDevice> = ({
               disabled
             />
           </div>
-          сек
+          &nbsp; сек
         </div>
       </div>
     </div>

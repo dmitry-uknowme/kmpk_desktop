@@ -121,12 +121,11 @@ namespace QuickBlueToothLE
             deviceWatcher.Stopped += DeviceWatcher_Stopped;
 
             // Start the watcher.
-            await DisconnectAllDevices();
-            deviceWatcher.Start();
-            
 
             await socketIOClient.ConnectAsync(); 
             Console.WriteLine("init", socketIOClient.ServerUri);
+            //await DisconnectAllDevices();
+            deviceWatcher.Start();
 
             socketIOClient.On("WORKER:AUTO_SETUP_START", (payload) =>
             {
@@ -173,63 +172,33 @@ namespace QuickBlueToothLE
         {
             Console.WriteLine("Отключение от всех устройств...");
 
-            ProcessStartInfo processStartInfo = new ProcessStartInfo
+            //await socketIOClient.EmitAsync("RESTART_BT");
+            /*socketIOClient.On("RESTARTED_BT", async (payload) =>
             {
-                WindowStyle = ProcessWindowStyle.Hidden,
-            };
+                Console.WriteLine("rs");
+                Thread.Sleep(1000);*/
 
-            /*using (PowerShell PowerShellInst = PowerShell.Create())
-            {
-                string path = System.IO.Path.GetDirectoryName(@"C:\Temp\") + "\\Get-EventLog.ps1";
-                if (!string.IsNullOrEmpty(path))
-                    PowerShellInst.AddScript(System.IO.File.ReadAllText(path));
-
-                Collection<PSObject> PSOutput = PowerShellInst.Invoke();
-                foreach (PSObject obj in PSOutput)
+                ProcessStartInfo processStartInfo = new ProcessStartInfo
                 {
-                    if (obj != null)
-                    {
-                        Console.Write(obj.Properties["EntryType"].Value.ToString() + " - ");
-                        Console.Write(obj.Properties["Source"].Value.ToString() + " - ");
-                        Console.WriteLine(obj.Properties["Message"].Value.ToString() + " - ");
-                    }
-                }
-                Console.WriteLine("Done");
-                Console.Read();
-            }*/
-
-            //Process btOffProcess = new Process { StartInfo = new ProcessStartInfo { WindowStyle= ProcessWindowStyle.Maximized,FileName = "powershell", Arguments= "-file C://app//kmpk_desktop1//scripts//bt.ps1" } };
-            // btOffProcess.Start();
-
-            /* btOffProcess.ErrorDataReceived += async (object sender, DataReceivedEventArgs e) =>
-             {
-                 Console.WriteLine("o " + e.Data.ToString());
-             };
-             btOffProcess.OutputDataReceived += async (object sender, DataReceivedEventArgs e) =>
-             {
-                 Console.WriteLine("o " + e.Data.ToString());
-             };
-             //Process btOffProcess = Process.Start("powershell", "-file C:/app/kmpk_desktop1/scripts/bt.ps1");
-             btOffProcess.WaitForExit();*/
-           
-            //Process btOffProcess = Process.Start("start C:\\app\\kmpk_desktop1\\scripts\\btOff.bat");
-            //btOffProcess.WaitForExit();
-            Console.WriteLine("da");
-            return;
-            DeviceInformationCollection pairedBTDevices = await DeviceInformation.FindAllAsync(BluetoothLEDevice.GetDeviceSelectorFromPairingState(true));
-            DeviceInformationCollection connectedBTDevices = await DeviceInformation.FindAllAsync(BluetoothLEDevice.GetDeviceSelectorFromConnectionStatus(BluetoothConnectionStatus.Connected));
-            Console.WriteLine("Paired " + JsonSerializer.Serialize(connectedBTDevices.Count) + " " + JsonSerializer.Serialize(pairedBTDevices.Count));
-            foreach(var device in pairedBTDevices)
-            {
-                try
-                {
-                    await device.Pairing.UnpairAsync();
-                }
-                catch (Exception ex) 
-                { 
-                    Console.WriteLine("Error unpair device " + ex.ToString() + device.Id);
+                    WindowStyle = ProcessWindowStyle.Hidden,
                 };
-            }
+
+                DeviceInformationCollection pairedBTDevices = await DeviceInformation.FindAllAsync(BluetoothLEDevice.GetDeviceSelectorFromPairingState(true));
+                DeviceInformationCollection connectedBTDevices = await DeviceInformation.FindAllAsync(BluetoothLEDevice.GetDeviceSelectorFromConnectionStatus(BluetoothConnectionStatus.Connected));
+                Console.WriteLine("Paired " + JsonSerializer.Serialize(connectedBTDevices.Count) + " " + JsonSerializer.Serialize(pairedBTDevices.Count));
+                foreach (var device in pairedBTDevices)
+                {
+                    try
+                    {
+                        await device.Pairing.UnpairAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine("Error unpair device " + ex.ToString() + device.Id);
+                    };
+                }
+            //});
+           
         }
 
         private static string ConvertMacAddressToString(ulong macAddress)

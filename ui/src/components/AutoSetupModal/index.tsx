@@ -64,6 +64,16 @@ const AutoSetupModal: React.FC<AutoSetupModalProps> = ({
     // });
   }, []);
 
+  useEffect(() => {
+    setTimeout(() => {
+      settings.devices.map((device) =>
+        socket.emit("UI:DEVICE_TRY_DISCONNECT", {
+          address: device.address,
+        })
+      );
+    }, 500);
+  }, []);
+
   return (
     <div className="modal modal-lg d-block">
       <div
@@ -96,13 +106,6 @@ const AutoSetupModal: React.FC<AutoSetupModalProps> = ({
               e.preventDefault();
               setFoundDevices([]);
               setIsSearchStarted(true);
-              setTimeout(() => {
-                settings.devices.map((device) =>
-                  socket.emit("UI:DEVICE_TRY_DISCONNECT", {
-                    address: device.address,
-                  })
-                );
-              }, 500);
               setTimeout(
                 () =>
                   socket.emit("UI:AUTO_SETUP_START", {

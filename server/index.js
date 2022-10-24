@@ -168,6 +168,33 @@ try {
       socket.broadcast.emit("UI:AUTO_SETUP_FINISH", payload);
     });
 
+    socket.on("RESTART_BT", (payload) => {
+      const restartBluetooth = nodeChildProcess.spawn("cmd.exe", [
+        "/c",
+        "C:\\app\\kmpk_desktop1\\scripts\\btOff.bat",
+      ]);
+
+      restartBluetooth.stdout.on("data", (data) => {
+        console.log("[restart_bt] stdout: " + data);
+      });
+      restartBluetooth.on("exit", (data) => {
+        console.log("[restart_bt] stdout: " + data);
+        setTimeout(() => {
+          const restartBluetooth = nodeChildProcess.spawn("cmd.exe", [
+            "/c",
+            "C:\\app\\kmpk_desktop1\\scripts\\btOn.bat",
+          ]);
+          restartBluetooth.stdout.on("data", (data) => {
+            console.log("[restart_bt] stdout: " + data);
+          });
+          restartBluetooth.on("exit", (data) => {
+            console.log("[restart_bt] exit: " + data);
+            socket.broadcast.emit("RESTARTED_BT");
+          });
+        }, 300);
+      });
+    });
+
     socket.on("WORKER:DEVICE_DATA_RECIEVE", async (data) => {
       data = JSON.parse(data);
       //console.log("dadadadada", devices);

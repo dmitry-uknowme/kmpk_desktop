@@ -98,29 +98,29 @@ async function createWindow() {
   });
 }
 
-const restartBluetooth = nodeChildProcess.spawn("cmd.exe", [
-  "/c",
-  "C:\\app\\kmpk_desktop1\\scripts\\btOff.bat",
-]);
+// const restartBluetooth = nodeChildProcess.spawn("cmd.exe", [
+//   "/c",
+//   "C:\\app\\kmpk_desktop1\\scripts\\btOff.bat",
+// ]);
 
-restartBluetooth.stdout.on("data", (data) => {
-  console.log("[restart_bt] stdout: " + data);
-});
-restartBluetooth.on("exit", (data) => {
-  console.log("[restart_bt] stdout: " + data);
-  setTimeout(() => {
-    const restartBluetooth = nodeChildProcess.spawn("cmd.exe", [
-      "/c",
-      "C:\\app\\kmpk_desktop1\\scripts\\btOn.bat",
-    ]);
-    restartBluetooth.stdout.on("data", (data) => {
-      console.log("[restart_bt] stdout: " + data);
-    });
-    restartBluetooth.on("exit", (data) => {
-      console.log("[restart_bt] exit: " + data);
-    });
-  }, 500);
-});
+// restartBluetooth.stdout.on("data", (data) => {
+//   console.log("[restart_bt] stdout: " + data);
+// });
+// restartBluetooth.on("exit", (data) => {
+//   console.log("[restart_bt] stdout: " + data);
+//   setTimeout(() => {
+//     const restartBluetooth = nodeChildProcess.spawn("cmd.exe", [
+//       "/c",
+//       "C:\\app\\kmpk_desktop1\\scripts\\btOn.bat",
+//     ]);
+//     restartBluetooth.stdout.on("data", (data) => {
+//       console.log("[restart_bt] stdout: " + data);
+//     });
+//     restartBluetooth.on("exit", (data) => {
+//       console.log("[restart_bt] exit: " + data);
+//     });
+//   }, 300);
+// });
 
 const runServer = () => {
   serverScript = nodeChildProcess.spawn("cmd.exe", [
