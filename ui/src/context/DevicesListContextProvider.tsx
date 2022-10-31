@@ -31,29 +31,25 @@ const DevicesListContextProvider: React.FC = ({ children }) => {
   }, [settings]);
 
   useEffect(() => {
-    console.log("con");
     if (devicesList.length) {
-      console.log("conn");
       setTimeout(() => tryConnectDevice(), 1500);
 
       // setIsWaiting(true));
     }
 
     socket.on("UI:DEVICE_CONNECTED", (data) => {
-      console.log("connecteddddd", data);
-      setTimeout(
-        () =>
-          setDevicesList((state) => [
-            ...state.filter((d) => d.address !== data.address),
-            {
-              ...state.find((d) => d.address === data.address),
-              isWaiting: false,
-              isConnected: true,
-              isPaused: false,
-            },
-          ]),
-        100
-      );
+      setTimeout(() => {
+        socket.emit("UI:DEVICE_NEW_POINT", { address: data.address });
+        setDevicesList((state) => [
+          ...state.filter((d) => d.address !== data.address),
+          {
+            ...state.find((d) => d.address === data.address),
+            isWaiting: false,
+            isConnected: true,
+            isPaused: false,
+          },
+        ]);
+      }, 100);
     });
 
     socket.on("UI:DEVICE_DISCONNECTED", (data) => {

@@ -18,7 +18,7 @@ const Stats = () => {
   const [filters, setFilters] = useState<{
     date: string;
     sessionNumber: number;
-  }>();
+  }>({ date: "", sessionNumber: "" });
   const [scannedData, setScannedData] = useState([]);
   const [scannedDataDates, setScannedDataDates] = useState<string[]>([]);
   const [scannedDataDatesSessions, setScannedDataDatesSessions] =
@@ -49,7 +49,7 @@ const Stats = () => {
       .post(API_URL, dataToServer)
       .then((response) => {
         setDataToServer();
-        console.log("ress", response);
+        //console.log("ress", response);
         toast.success("Данные успешно отправлены на сервер");
       })
       .catch((er) => {
@@ -110,17 +110,23 @@ const Stats = () => {
             h2: data.data.reduce((avg, value) => {
               return parseFloat(avg) + parseFloat(value.h2) / data.data.length;
             }, 0),
-            maxH2: Math.max(...data.data.map((d) => d.h2)),
+            maxH2: Math.max(...data.data.map((d) => parseFloat(d.h2))),
             temp: data.data.reduce((avg, value) => {
-              return parseFloat(avg) + value.temp
-                ? parseFloat(value.temp)
+              return parseFloat(value.temp)
+                ? (parseFloat(avg) + parseFloat(value.temp)) / data.data.length
                 : 0 / data.data.length;
+              // return parseFloat(avg) + value.temp
+              //   ? parseFloat(value.temp)
+              //   : 0 / data.data.length;
             }, 0),
             ph: data.data.reduce((avg, value) => {
               return parseFloat(avg) + parseFloat(value.ph) / data.data.length;
             }, 0),
             moi: data.data.reduce((avg, value) => {
-              return parseFloat(avg) + parseFloat(value.moi) / data.data.length;
+              return parseFloat(value.moi)
+                ? (parseFloat(avg) + parseFloat(value.moi)) / data.data.length
+                : 0 / data.data.length;
+              // return parseFloat(avg) + parseFloat(value.moi) / data.data.length;
             }, 0),
             gps: {
               lat: data.data[0].gps.lat || "",
@@ -302,6 +308,9 @@ const Stats = () => {
                       //fetchScanData(filters?.date, e.target.value);
                     }}
                   >
+                    <option value="" disabled selected={filters.date === ""}>
+                      Дата
+                    </option>
                     {scannedDataDates?.map((date) => (
                       <option>{date}</option>
                     ))}
@@ -319,6 +328,13 @@ const Stats = () => {
                       //fetchScanData(filters?.date, e.target.value);
                     }}
                   >
+                    <option
+                      value=""
+                      disabled
+                      selected={filters.sessionNumber === ""}
+                    >
+                      Номер смены
+                    </option>
                     {scannedDataDatesSessions?.map((session) => (
                       <option>{session}</option>
                     ))}

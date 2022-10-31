@@ -62,7 +62,13 @@ const DeviceCard: React.FC<IDevice> = ({
     awaitTimer.current = setInterval(() => {
       setAwaitTime((state) => (state += 1));
     }, 1000);
-    setTimeout(() => tryConnectDevice(), 1500);
+    // tryConnectDevice()
+    // setTimeout(
+    //   () =>
+    //     !devicesList.find((d) => d.address === address).isConnected &&
+    //     tryConnectDevice(),
+    //   1500
+    // );
   }, []);
 
   const tryConnectDevice = () => {
@@ -222,8 +228,25 @@ const DeviceCard: React.FC<IDevice> = ({
             {isPaused ? (
               <span
                 onClick={() => {
-                  isConnected && setIsPaused(false);
+                  isConnected &&
+                    setDevicesList((state) => [
+                      ...state.filter((d) => d.address !== address),
+                      {
+                        ...state.find((d) => d.address === address),
+                        isPaused: false,
+                      },
+                    ]);
                   socket.emit("UI:DEVICE_NEW_POINT", { address });
+                  //  socket.emit("UI:DEVICE_TRY_DISCONNECT", {
+                  //    address: address,
+                  //  });
+                  //  setDevicesList((state) => [
+                  //    ...state.filter((d) => d.address !== address),
+                  //    {
+                  //      ...state.find((d) => d.address === address),
+                  //      isWaiting: true,
+                  //    },
+                  //  ]);
                 }}
                 style={{ cursor: "pointer" }}
               >
@@ -231,7 +254,15 @@ const DeviceCard: React.FC<IDevice> = ({
               </span>
             ) : (
               <span
-                onClick={() => setIsPaused(true)}
+                onClick={() =>
+                  setDevicesList((state) => [
+                    ...state.filter((d) => d.address !== address),
+                    {
+                      ...state.find((d) => d.address === address),
+                      isPaused: true,
+                    },
+                  ])
+                }
                 style={{ cursor: "pointer" }}
               >
                 <PauseIcon

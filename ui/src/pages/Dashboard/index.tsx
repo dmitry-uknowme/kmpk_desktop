@@ -133,7 +133,20 @@ const DashboardPage = () => {
                         className="header__profile-name"
                         style={{ color: "#111", textDecoration: "none" }}
                       >
-                        {fullName}
+                        {auth?.user ? (
+                          <>
+                            {fullName}
+                            {"  "}
+                            Дата начала:{" "}
+                            {new Date().toLocaleDateString(
+                              auth.start_time
+                            )}{" "}
+                            {new Date().toLocaleTimeString(auth.start_time)},
+                            Номер смены: {auth.session_number}
+                          </>
+                        ) : (
+                          ""
+                        )}
                       </div>
                     </div>
                   </Link>
@@ -170,6 +183,7 @@ const DashboardPage = () => {
                         isWaiting={device.isWaiting}
                         isPaused={device.isPaused}
                         isConnected={device.isConnected}
+                        pointNumber={device.pointNumber}
                       />
                     </div>
                   ))
