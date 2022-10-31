@@ -9,6 +9,7 @@ import ResultIcon from "../../../public/result_icon.png";
 import AuthContext from "@/context/AuthContext";
 import io from "socket.io-client";
 import AutoSetupModal from "@/components/AutoSetupModal";
+import DevicesListContext from "@/context/DevicesListContext";
 
 const socket = io("ws://localhost:8081");
 
@@ -17,6 +18,7 @@ const settings = window.api.getSettings();
 const DashboardPage = () => {
   const [isModalAutoSetupVisible, setIsModalAutoSetupVisible] = useState(false);
   const { auth, setAuth } = useContext(AuthContext);
+  const { devicesList, setDevicesList } = useContext(DevicesListContext);
   const [search, setSearch] = useSearchParams();
   const fullName = auth?.user?.full_name;
   const [isShowMenu, setIsShowMenu] = useState<boolean>(false);
@@ -156,15 +158,22 @@ const DashboardPage = () => {
         </div>
         <main className="main devices_list mt-5">
           <div className="row">
-            {settings.devices.map((device) => (
-              <div className="col-md-3">
-                <DeviceCard
-                  address={device.address}
-                  type={device.type}
-                  number={device.number}
-                />
-              </div>
-            ))}
+            {devicesList?.length
+              ? devicesList
+                  ?.sort((a, b) => (a.number > b.number ? 1 : -1))
+                  ?.map((device) => (
+                    <div className="col-md-3">
+                      <DeviceCard
+                        address={device.address}
+                        type={device.type}
+                        number={device.number}
+                        isWaiting={device.isWaiting}
+                        isPaused={device.isPaused}
+                        isConnected={device.isConnected}
+                      />
+                    </div>
+                  ))
+              : ""}
 
             {/* <div className="col-md-3 h-100">
               <div

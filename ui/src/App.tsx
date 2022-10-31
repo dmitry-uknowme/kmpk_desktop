@@ -14,6 +14,7 @@ import { ToastContainer, toast } from "react-toastify";
 import { useEffect } from "react";
 import CustomRoutes from "./components/Routes";
 import AuthContextProvider from "./context/AuthContextProvider";
+import DevicesListContextProvider from "./context/DevicesListContextProvider";
 
 const App: React.FC = () => {
   return (
@@ -35,12 +36,14 @@ const App: React.FC = () => {
         pauseOnHover
       />
       <AuthContextProvider>
-        <BrowserRouter>
-          <CustomRoutes />
-          {/* <Link to="/">
+        <DevicesListContextProvider>
+          <BrowserRouter>
+            <CustomRoutes />
+            {/* <Link to="/">
           <button className="btn">На главную</button>
         </Link> */}
-        </BrowserRouter>
+          </BrowserRouter>
+        </DevicesListContextProvider>
       </AuthContextProvider>
     </div>
   );

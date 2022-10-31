@@ -1,11 +1,12 @@
 // @ts-nocheck
 import styles from "./index.module.sass";
 import io from "socket.io-client";
-import { useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import TimerIcon from "../../../public/timer_icon.png";
 import PauseIcon from "@mui/icons-material/Pause";
 import PlayIcon from "@mui/icons-material/PlayArrow";
 import { toast } from "react-toastify";
+import DevicesListContext from "@/context/DevicesListContext";
 
 const socket = io("ws://localhost:8081");
 
@@ -13,8 +14,9 @@ export interface IDevice {
   number: number;
   address: string;
   type: "Hydro" | "Ground";
-  // isConnected: boolean;
+  isConnected: boolean;
   isWorking: boolean;
+  isPaused: boolean;
   h2: string;
   Lat: string;
   Long: string;
@@ -23,14 +25,17 @@ export interface IDevice {
   temp: string;
   // gps: { N: string; E: string };
   pointNumber: number;
+  isWaiting: boolean;
   // workingTime: string;
 }
 
 const DeviceCard: React.FC<IDevice> = ({
   number,
   address,
-  // isConnected,
+  isConnected,
+  isWaiting,
   isWorking,
+  isPaused,
   h2,
   Lat,
   Long,
@@ -43,12 +48,13 @@ const DeviceCard: React.FC<IDevice> = ({
 }) => {
   const [data, setData] = useState<IDevice>();
   const [workingTime, setWorkingTime] = useState(0);
-  const [isConnected, setIsConnected] = useState(false);
+  const { devicesList, setDevicesList } = useContext(DevicesListContext);
+  //const [isConnected, setIsConnected] = useState(false);
   const timerRef = useRef();
   const [awaitTime, setAwaitTime] = useState(0);
   const awaitTimer = useRef();
-  const [isWaiting, setIsWaiting] = useState<boolean>(false);
-  const [isPaused, setIsPaused] = useState<boolean>(false);
+  //const [isWaiting, setIsWaiting] = useState<boolean>(false);
+  //const [isPaused, setIsPaused] = useState<boolean>(false);
 
   useEffect(() => {
     clearInterval(awaitTimer, awaitTimer.current);
@@ -60,13 +66,34 @@ const DeviceCard: React.FC<IDevice> = ({
   }, []);
 
   const tryConnectDevice = () => {
-    socket.emit("UI:DEVICE_TRY_CONNECT", { address });
-    setIsWaiting(true);
+    devicesList.map((device) => {
+      socket.emit("UI:DEVICE_TRY_CONNECT", { address: address });
+      setDevicesList((state) => [
+        ...state.filter((d) => d.address !== device.address),
+        {
+          ...state.find((d) => d.address === device.address),
+          isWaiting: true,
+        },
+      ]);
+    });
   };
 
+  // const tryConnectDevice = () => {
+  //   socket.emit("UI:DEVICE_TRY_CONNECT", { address });
+  //   //setIsWaiting(true);
+  // };
+
   const tryDisconnectDevice = () => {
-    socket.emit("UI:DEVICE_TRY_DISCONNECT", { address });
-    setIsWaiting(true);
+    socket.emit("UI:DEVICE_TRY_DISCONNECT", { address: address });
+    setDevicesList((state) => [
+      ...state.filter((d) => d.address !== address),
+      {
+        ...state.find((d) => d.address === address),
+        isWaiting: true,
+      },
+    ]);
+    // socket.emit("UI:DEVICE_TRY_DISCONNECT", { address });
+    //setIsWaiting(true);
   };
 
   useEffect(() => {
@@ -90,36 +117,36 @@ const DeviceCard: React.FC<IDevice> = ({
       }
       // console.log("dataaaaa", data);
     });
-    socket.on("UI:DEVICE_CONNECTED", (data) => {
-      if (data.address === address) {
-        socket.emit("UI:DEVICE_NEW_POINT", { address });
-        //console.log("cn", data, { ...data, pointNumber: data.pointNumber });
-        setData((state) => ({ ...state, pointNumber: data.pointNumber }));
-        // setData((state) => ({ ...state }));
-        setIsConnected(true);
-        setIsWaiting(false);
-        setIsPaused(false);
-      }
-    });
-    socket.on("UI:DEVICE_DISCONNECTED", (data) => {
-      if (data.address === address) {
-        setIsWaiting(false);
-        //console.log("ddddddd", address);
-        toast.error(
-          "Невозможно подключиться к устройству с адресом " + data.address
-        );
-        setIsConnected(false);
-        setIsWaiting(false);
-      }
-      clearInterval(timerRef.current);
-      timerRef.current = setInterval(() => {
-        setWorkingTime((state) => (state += 1));
-      }, 1000);
-      if (awaitTime > 30000) {
-        console.log("больше 30 сек нет данных");
-        tryConnectDevice();
-      }
-    });
+    // socket.on("UI:DEVICE_CONNECTED", (data) => {
+    //   if (data.address === address) {
+    //     socket.emit("UI:DEVICE_NEW_POINT", { address });
+    //     //console.log("cn", data, { ...data, pointNumber: data.pointNumber });
+    //     setData((state) => ({ ...state, pointNumber: data.pointNumber }));
+    //     // setData((state) => ({ ...state }));
+    //     //setIsConnected(true);
+    //     //setIsWaiting(false);
+    //     //setIsPaused(false);
+    //   }
+    // });
+    // socket.on("UI:DEVICE_DISCONNECTED", (data) => {
+    //   if (data.address === address) {
+    //     //setIsWaiting(false);
+    //     //console.log("ddddddd", address);
+    //     toast.error(
+    //       "Невозможно подключиться к устройству с адресом " + data.address
+    //     );
+    //     //setIsConnected(false);
+    //     //setIsWaiting(false);
+    //   }
+    //   clearInterval(timerRef.current);
+    //   timerRef.current = setInterval(() => {
+    //     setWorkingTime((state) => (state += 1));
+    //   }, 1000);
+    //   if (awaitTime > 30000) {
+    //     console.log("больше 30 сек нет данных");
+    //     tryConnectDevice();
+    //   }
+    // });
 
     return () => clearInterval(timerRef.current);
   }, []);
@@ -132,9 +159,9 @@ const DeviceCard: React.FC<IDevice> = ({
         setWorkingTime((state) => (state += 1));
       }, 1000);
     }
-    if (!isConnected) {
-      setIsPaused(true);
-    }
+    // if (!isConnected) {
+    //   setIsPaused(true);
+    // }
     return () => clearInterval(timerRef.current);
   }, [isConnected, isPaused]);
 
