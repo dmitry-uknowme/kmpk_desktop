@@ -122,56 +122,70 @@ async function createWindow() {
 //   }, 300);
 // });
 
-const runServer = () => {
-  serverScript = nodeChildProcess.spawn("cmd.exe", [
-    "/c",
-    `npx kill-port 8081 && cd C:\\app\\kmpk_desktop1\\server && npm run dev`,
-  ]);
+// const runServer = () => {
+//   serverScript = nodeChildProcess.spawn("npx", [
+//     "kill-port",
+//     "8081",
+//     "&&",
+//     "cd",
+//     "/home/dmitry/projects/kmpk_desktop/server",
+//     "&&",
+//     "npm",
+//     "run",
+//     "dev",
+//   ]);
+//   // serverScript = nodeChildProcess.spawn("cmd.exe", [
+//   //   "/c",
+//   //   `npx kill-port 8081 && cd C:\\app\\kmpk_desktop1\\server && npm run dev`,
+//   // ]);
 
-  console.log("[server] PID: " + serverScript.pid);
+//   console.log("[server] PID: " + serverScript.pid);
 
-  serverScript.stdout.on("data", (data) => {
-    console.log("[server] stdout: " + data);
-  });
+//   serverScript.stdout.on("data", (data) => {
+//     console.log("[server] stdout: " + data);
+//   });
 
-  serverScript.stderr.on("data", (err) => {
-    console.log("[server] stderr: " + err);
-  });
+//   serverScript.stderr.on("data", (err) => {
+//     console.log("[server] stderr: " + err);
+//   });
 
-  serverScript.on("exit", (code) => {
-    console.log("[server] Exit Code: " + code);
-    setTimeout(() => runServer(), 500);
-  });
-};
+//   serverScript.on("exit", (code) => {
+//     console.log("[server] Exit Code: " + code);
+//     setTimeout(() => runServer(), 500);
+//   });
+// };
 
 app
   .whenReady()
   .then(createWindow)
   .then(() => {
-    runServer();
+    // runServer();
   })
   .then(() => {
-    setTimeout(() => {
-      workerScript = nodeChildProcess.spawn("cmd.exe", [
-        "/c",
-        "start",
-        "C:\\app\\kmpk_desktop1\\worker2\\bin\\Release\\BluetoothWorker.exe",
-      ]);
+    // setTimeout(() => {
+    //   workerScript = nodeChildProcess.spawn("python", [
+    //     "/home/dmitry/projects/kmpk_desktop/worker/btWorker.py",
+    //   ]);
+    //   // workerScript = nodeChildProcess.spawn("cmd.exe", [
+    //   //   "/c",
+    //   //   "start",
+    //   //   "C:\\app\\kmpk_desktop1\\worker2\\bin\\Release\\BluetoothWorker.exe",
+    //   // ]);
 
-      console.log("[worker] PID: " + workerScript.pid);
+    //   console.log("[worker] PID: " + workerScript.pid);
 
-      workerScript.stdout.on("data", (data) => {
-        console.log("[worker] stdout: " + data);
-      });
+    //   workerScript.stdout.on("data", (data) => {
+    //     console.log("[worker] stdout: " + data);
+    //   });
 
-      workerScript.stderr.on("data", (err) => {
-        console.log("[worker] stderr: " + err);
-      });
+    //   workerScript.stderr.on("data", (err) => {
+    //     console.log("[worker] stderr: " + err);
+    //   });
 
-      workerScript.on("exit", (code) => {
-        console.log("[worker] Exit Code: " + code);
-      });
-    }, 3000);
+    //   workerScript.on("exit", (code) => {
+    //     console.log("[worker] Exit Code: " + code);
+    //   });
+    // }, 3000);
 
     // win.setAlwaysOnTop(true, "screen");
     win.maximize();

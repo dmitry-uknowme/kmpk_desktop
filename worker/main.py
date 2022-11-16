@@ -175,7 +175,6 @@ class BtWorker():
         self.pointNumber = 1
         self.detectedDevices = []
 
-
         @sio.on('WORKER:DEVICE_TRY_CONNECT')
         async def onDeviceConnect(data):
             print('on connect', dict(data)['address'])
@@ -193,7 +192,8 @@ class BtWorker():
             try:
                 await queue.put((time.time(), data, address))
             except Exception as e:
-                print('Устройство '+ address + ' отключено.' +' Ошибка: '+ str(e))
+                print('Устройство ' + address +
+                      ' отключено.' + ' Ошибка: ' + str(e))
                 await sio.emit('WORKER:DEVICE_DISCONNECTED', {"address": address})
                 self.pointNumber = self.pointNumber + 1
         try:
@@ -210,7 +210,7 @@ class BtWorker():
                     await client.start_notify(char_uuid, callback_handler)
                     await asyncio.sleep(15)
         except Exception as e:
-            print('Устройство '+ address + ' отключено.' + ' Ошибка: '+ str(e))
+            print('Устройство ' + address + ' отключено.' + ' Ошибка: ' + str(e))
             await sio.emit('WORKER:DEVICE_DISCONNECTED', {"address": address})
             # await self.deviceDisconnect(address)
             await asyncio.sleep(10)
@@ -237,7 +237,8 @@ class BtWorker():
                     tempData += data.decode("ascii")
                     if '\r' not in tempData:
                         continue
-                    print('Полученные данные:', tempData, 'Устройство:', address)
+                    print('Полученные данные:', tempData,
+                          'Устройство:', address)
 
                     tmp = dict(s.split("=") for s in tempData.split(","))
                     obj = dict()
@@ -249,7 +250,7 @@ class BtWorker():
                     # obj['temp'] = tmp["T"] ? tmp['T']:""
                     obj['h2'] = tmp["H2"].replace("ppm", "")
                     # obj['maxH2']= float(tmp["H2"].replace("ppm", ""))
-                    
+
                     if (tmp["PH"].split(" ")[0]):
                         obj['ph'] = tmp["PH"].split(" ")[0]
                     obj['moi'] = tmp["Moi"].split(" ")[0]
@@ -257,11 +258,11 @@ class BtWorker():
                     obj['Long'] = tmp["Lo"]
                     # if (obj['h2'] > obj['maxH2'] or not obj['maxH2']):
                     #     obj['maxH2'] = obj['h2']
-                        
+
                     await sio.emit('WORKER:DEVICE_DATA_RECIEVE', {"address": address, "data": obj, "pointNumber": self.pointNumber})
-                    
+
                 except Exception as e:
-                    print('unable to parse',e)
+                    print('unable to parse', e)
                     tempData = ""
                     continue
                 tempData = ""
@@ -285,24 +286,24 @@ class BtWorker():
         asyncio.gather(client_task, consumer_task)
         logger.info("Main method done.")
 
-    async def deviceDisconnect(self,address:str):
+    async def deviceDisconnect(self, address: str):
         async with BleakClient(address, timeout=10.0) as client:
             if (client.is_connected):
                 await client.stop_notify(CHARACTERISTIC_UUID)
                 await client.disconnect()
                 logger.info(f"Disconnected: {client.is_connected}")
                 await sio.emit('WORKER:DEVICE_DISCONNECTED', {"address": address, "pointNumber": self.pointNumber})
-                
 
     async def startServer(self):
         try:
             pointNumber = 1
-            await sio.connect('http://localhost:8081',wait_timeout=10)
+            await sio.connect('http://localhost:8081', wait_timeout=10)
             await sio.wait()
         except Exception as e:
             await asyncio.sleep(3)
             print('try connect')
             await self.startServer()
+
 
 if __name__ == '__main__':
     worker = BtWorker()

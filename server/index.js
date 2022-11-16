@@ -40,27 +40,30 @@ try {
     console.log("No session found", err);
   }
 
-  const runWorker = () => {
-    workerScript = nodeChildProcess.spawn("cmd.exe", [
-      "/c",
-      "start",
-      "C:\\app\\kmpk_desktop1\\worker2\\bin\\Release\\BluetoothWorker.exe",
-    ]);
+  // const runWorker = () => {
+  //   workerScript = nodeChildProcess.spawn("python", [
+  //     "/home/dmitry/projects/kmpk_desktop/worker/btWorker.py",
+  //   ]);
+  //   // workerScript = nodeChildProcess.spawn("cmd.exe", [
+  //   //   "/c",
+  //   //   "start",
+  //   //   "C:\\app\\kmpk_desktop1\\worker2\\bin\\Release\\BluetoothWorker.exe",
+  //   // ]);
 
-    console.log("[worker] PID: " + workerScript.pid);
+  //   console.log("[worker] PID: " + workerScript.pid);
 
-    workerScript.stdout.on("data", (data) => {
-      console.log("[worker] stdout: " + data);
-    });
+  //   workerScript.stdout.on("data", (data) => {
+  //     console.log("[worker] stdout: " + data);
+  //   });
 
-    workerScript.stderr.on("data", (err) => {
-      console.log("[worker] stderr: " + err);
-    });
+  //   workerScript.stderr.on("data", (err) => {
+  //     console.log("[worker] stderr: " + err);
+  //   });
 
-    workerScript.on("exit", (code) => {
-      console.log("[worker] Exit Code: " + code);
-    });
-  };
+  //   workerScript.on("exit", (code) => {
+  //     console.log("[worker] Exit Code: " + code);
+  //   });
+  // };
 
   let pointNumber = 0;
 
@@ -81,11 +84,13 @@ try {
     });
   } catch (ex) {}
 
-  const APP_DIR = "C:\\app\\kmpk_desktop1";
+  // const APP_DIR = "C:\\app\\kmpk_desktop1";
   // const APP_DIR = "/home/dmitry/projects/kmpk_desktop";
 
+  const APP_DIR = "/home/dmitry/projects/kmpk_desktop";
+
   let devices = JSON.parse(
-    fs.readFileSync(`${APP_DIR}\\settings.json`, "utf8")
+    fs.readFileSync(`${APP_DIR}/settings.json`, "utf8")
   ).devices;
 
   const workers = {};

@@ -191,7 +191,8 @@ import { electronAPI } from "@electron-toolkit/preload";
 
 // Custom APIs for renderer
 
-const APP_DIR = "C:\\app\\kmpk_desktop1";
+// const APP_DIR = "C:\\app\\kmpk_desktop1";
+const APP_DIR = "/home/dmitry/projects/kmpk_desktop";
 
 const api = {
   test: (callback: any) => {
@@ -200,7 +201,7 @@ const api = {
   },
   getSettings: (): string => {
     const settings = JSON.parse(
-      fs.readFileSync(`${APP_DIR}\\settings.json`, "utf8")
+      fs.readFileSync(`${APP_DIR}/settings.json`, "utf8")
     );
     return settings;
   },
