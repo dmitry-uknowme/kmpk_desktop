@@ -201,6 +201,7 @@ try {
     });
 
     socket.on("WORKER:DEVICE_DATA_RECIEVE", async (data) => {
+      console.log("recccc", data);
       data = JSON.parse(data);
       //console.log("dadadadada", devices);
       const pointNumber = devices.find(

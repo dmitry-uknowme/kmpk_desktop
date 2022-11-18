@@ -22,16 +22,9 @@ class Main():
             print('on connect', dict(data)['address'])
             address = dict(data)['address']
             device = bldevice.BlDevice(
-                1, "", deviceType=bldevice.DeviceTypes.Hydrogen, bleaddr=address)
+                1, "", deviceType=bldevice.DeviceTypes.Hydrogen, bleaddr=address, socketIO=sio)
             self.devices.append(device)
             self.btWorkers[address] = BtWorker(device, self.devices).runOnce()
-
-            # print("workerssss", self.btWorkers)
-            # self.btWorkers[address]['device']['address']
-            # self.btWorkers.append(address)
-            # self.btWorkers
-            # self
-            # await self.deviceConnect(address)
 
     async def startServer(self):
         print("starting")

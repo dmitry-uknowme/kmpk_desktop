@@ -5,6 +5,7 @@ import threading
 from datetime import datetime
 from enum import Enum
 import os
+import socketio
 
 
 class DeviceTypes(Enum):
@@ -16,8 +17,9 @@ class BlDevice(QObject):
     statusChanged = pyqtSignal()
     dataUpdated = pyqtSignal()
 
-    def __init__(self, deviceNum, dataFileName, deviceType=DeviceTypes.Hydrogen, bleaddr=""):
+    def __init__(self, deviceNum, dataFileName, deviceType=DeviceTypes.Hydrogen, bleaddr="", socketIO=""):
         QObject.__init__(self)
+        self.socketIO = socketIO
         self.status = "Отключен"
         self.isconnected = False
         self.working = False
@@ -108,6 +110,14 @@ class BlDevice(QObject):
             if self.ignoreData:
                 return
             self.strData = data
+    #  T = dict["T"],
+    #                     H2 = dict["H2"],
+    #                     PH = dict["PH"].Split(' ')[0],
+    #                     Moi = dict["Moi"].Split(' ')[0],
+    #                     La = dict["La"],
+    #                     Lo = dict["Lo"],
+    #                     Ti = dict["Ti"],
+
             tmp = dict(s.split("=") for s in data.split(","))
             self.temp = tmp["T"]
             self.h2 = tmp["H2"].replace("ppm", "")
@@ -133,8 +143,9 @@ class BlDevice(QObject):
             self.minH2 = min(self.dataValue)
 
             self.isDataReceived = True
-
-            self.dataUpdated.emit()
+            print("tmp", tmp)
+            self.socketIO.emit("WORKER:DEVICE_DATA_RECIEVE", tmp)
+            # self.dataUpdated.emit()
 
     def resetIsDataReceived(self):
         self.isDataReceived = False

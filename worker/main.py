@@ -180,6 +180,7 @@ class BtWorker():
             print('on connect', dict(data)['address'])
             address = dict(data)['address']
             await self.deviceConnect(address)
+            await sio.emit("WORKER:DEVICE_DATA_RECIEVE", "dadadad")
 
         @sio.on('WORKER:DEVICE_TRY_DISCONNECT')
         async def onDeviceDisconnect(data):
