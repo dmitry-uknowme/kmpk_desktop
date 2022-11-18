@@ -24,7 +24,8 @@ class Main():
             device = bldevice.BlDevice(
                 1, "", deviceType=bldevice.DeviceTypes.Hydrogen, bleaddr=address, socketIO=sio)
             self.devices.append(device)
-            self.btWorkers[address] = BtWorker(device, self.devices).runOnce()
+            self.btWorkers[address] = BtWorker(device, self.devices).run()
+            # await sio.emit("WORKER:DEVICE_CONNECTED", {"address": address})
 
     async def startServer(self):
         print("starting")
@@ -40,9 +41,10 @@ class Main():
 
 
 class PeripheralDelegate(DefaultDelegate):
-    def __init__(self, device):
+    def __init__(self, device, socketIO):
         DefaultDelegate.__init__(self)
         # self.logs = logs
+        self.socketIO = socketIO
         self.data = ""
         self.device = device
 
@@ -51,9 +53,35 @@ class PeripheralDelegate(DefaultDelegate):
         self.data += data.decode("ascii")
         if '\r' not in self.data:
             return
-        self.device.updateData(self.data)
-        print("DATA UPDATED {}".format(self.data))
+        # self.device.updateData(self.data)
+
+        # tsk = loop.create_task(self.device.updateData(self.data))
+        # tsk.add_done_callback(
+        # lambda t: print(f'Task done with result={t.result()}'))
+        # asyncio.run(self.device.updateData(self.data))
+        tmp = dict(s.split("=") for s in data.split(","))
+        # self.parsedData["T"] = tmp["T"]
+        # self.parsedData["H2"] = tmp["H2"].replace("ppm", "")
+        # self.parsedData["PH"] = tmp["PH"].split(" ")[0]
+        # self.parsedData["Moi"] = tmp["Moi"].split(" ")[0]
+        # self.parsedData["La"] = tmp["La"]
+        # self.parsedData["Lo"] = tmp["Lo"]
+
+        # loop = asyncio.get_event_loop()
+        # loop.run_until_complete(self.updateData(
+        #     {"address": self.device, "data": self.parsedData}))
+        # loop.close()
+
+        # tsk = loop.create_task(self.updateData(
+        #     {"address": self.device, "data": self.parsedData}))
+        # tsk.add_done_callback(
+        #     lambda t: print(f'Task done with result={t.result()}  << return val of main()'))
+        # print("DATA UPDATED {}".format(self.data))
         self.data = ""
+
+    async def updateData(self, data):
+        print("upd data", data)
+        # await self.socketIO.emit("WORKER:DEVICE_DATA_RECIEVE", data)
 
 
 class BtWorker():
@@ -81,7 +109,7 @@ class BtWorker():
             return
 
     def connect(self, name):
-        #self.device.setStatus(True, "Поиск...")
+        # self.device.setStatus(True, "Поиск...")
 
         devices = self.scanner.scan(3.0)
         mltDevice = None
@@ -112,7 +140,7 @@ class BtWorker():
         self.device.bleAddress = mltDevice.addr
         self.device.addrType = mltDevice.addrType
         self.mltDevice = Peripheral(mltDevice.addr, mltDevice.addrType)
-        self.mltDevice.withDelegate(PeripheralDelegate(self.device))
+        self.mltDevice.withDelegate(PeripheralDelegate(self.device, sio))
         print("Connected to device")
         self.device.needReconnect = False
         self.device.setStatus(True, "Подключено")
@@ -121,7 +149,7 @@ class BtWorker():
     def connectSaved(self):
         self.mltDevice = Peripheral(
             self.device.bleAddress, self.device.addrType)
-        self.mltDevice.withDelegate(PeripheralDelegate(self.device))
+        self.mltDevice.withDelegate(PeripheralDelegate(self.device, sio))
 
     def writeToDevice(self, message, inHex):
         with self.lock:

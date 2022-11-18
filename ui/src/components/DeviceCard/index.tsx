@@ -84,6 +84,8 @@ const DeviceCard: React.FC<IDevice> = ({
     });
   };
 
+  console.log("dddddddddddlllss", devicesList);
+
   // const tryConnectDevice = () => {
   //   socket.emit("UI:DEVICE_TRY_CONNECT", { address });
   //   //setIsWaiting(true);

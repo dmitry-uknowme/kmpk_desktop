@@ -142,12 +142,13 @@ try {
     });
 
     socket.on("WORKER:DEVICE_CONNECTED", (data) => {
-      data = JSON.parse(data);
+      console.log("connnnnnnnn", data);
+      // data = JSON.parse(data);
       socket.broadcast.emit("UI:DEVICE_CONNECTED", { ...data, pointNumber });
     });
 
     socket.on("WORKER:DEVICE_DISCONNECTED", (data) => {
-      data = JSON.parse(data);
+      // data = JSON.parse(data);
       socket.broadcast.emit("UI:DEVICE_DISCONNECTED", data);
     });
 
@@ -202,7 +203,7 @@ try {
 
     socket.on("WORKER:DEVICE_DATA_RECIEVE", async (data) => {
       console.log("recccc", data);
-      data = JSON.parse(data);
+      // data = JSON.parse(data);
       //console.log("dadadadada", devices);
       const pointNumber = devices.find(
         (d) => d.address === data.address
