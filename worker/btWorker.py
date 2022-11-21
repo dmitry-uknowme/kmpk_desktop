@@ -7,7 +7,8 @@ import socketio
 import asyncio
 import bldevice
 
-sio = socketio.AsyncClient()
+sio = socketio.Client()
+# sio = socketio.AsyncClient()
 
 
 class Main():
@@ -18,21 +19,20 @@ class Main():
         # self.btWorkers = [BtWorker(d, self.devices) for d in self.devices]
 
         @sio.on('WORKER:DEVICE_TRY_CONNECT')
-        async def onDeviceConnect(data):
+        def onDeviceConnect(data):
             print('on connect', dict(data)['address'])
             address = dict(data)['address']
             device = bldevice.BlDevice(
                 1, "", deviceType=bldevice.DeviceTypes.Hydrogen, bleaddr=address, socketIO=sio)
             self.devices.append(device)
             self.btWorkers[address] = BtWorker(device, self.devices).run()
-            # await sio.emit("WORKER:DEVICE_CONNECTED", {"address": address})
+            sio.emit("WORKER:DEVICE_CONNECTED", {"address": address})
 
     async def startServer(self):
         print("starting")
         try:
             await sio.connect('http://localhost:8081', wait_timeout=10)
             await sio.wait()
-
         except Exception as e:
             await asyncio.sleep(3)
             print('try connect')
@@ -43,45 +43,38 @@ class Main():
 class PeripheralDelegate(DefaultDelegate):
     def __init__(self, device, socketIO):
         DefaultDelegate.__init__(self)
+        self.parsedData = {}
         # self.logs = logs
         self.socketIO = socketIO
         self.data = ""
         self.device = device
 
     def handleNotification(self, cHandle, data):
-        print("RX <<< {}".format(data.decode("ascii")))
+        # print("RX <<< {}".format(data.decode("ascii")))
         self.data += data.decode("ascii")
         if '\r' not in self.data:
             return
-        # self.device.updateData(self.data)
 
-        # tsk = loop.create_task(self.device.updateData(self.data))
-        # tsk.add_done_callback(
-        # lambda t: print(f'Task done with result={t.result()}'))
-        # asyncio.run(self.device.updateData(self.data))
-        tmp = dict(s.split("=") for s in data.split(","))
-        # self.parsedData["T"] = tmp["T"]
-        # self.parsedData["H2"] = tmp["H2"].replace("ppm", "")
-        # self.parsedData["PH"] = tmp["PH"].split(" ")[0]
-        # self.parsedData["Moi"] = tmp["Moi"].split(" ")[0]
-        # self.parsedData["La"] = tmp["La"]
-        # self.parsedData["Lo"] = tmp["Lo"]
+        # print("dataaaaa", self.data)
+        tmp = dict(s.split("=") for s in self.data.split(","))
+        self.parsedData["T"] = tmp["T"]
+        self.parsedData["H2"] = tmp["H2"].replace("ppm", "")
+        self.parsedData["PH"] = tmp["PH"].split(" ")[0]
+        self.parsedData["Moi"] = tmp["Moi"].split(" ")[0]
+        self.parsedData["La"] = tmp["La"]
+        self.parsedData["Lo"] = tmp["Lo"]
 
+        self.updateData(
+            {"address": self.device.bleAddress, "data": self.parsedData})
         # loop = asyncio.get_event_loop()
-        # loop.run_until_complete(self.updateData(
-        #     {"address": self.device, "data": self.parsedData}))
-        # loop.close()
-
-        # tsk = loop.create_task(self.updateData(
-        #     {"address": self.device, "data": self.parsedData}))
-        # tsk.add_done_callback(
-        #     lambda t: print(f'Task done with result={t.result()}  << return val of main()'))
-        # print("DATA UPDATED {}".format(self.data))
+        # task = loop.create_task(self.updateData(
+        #     {"address": self.device.bleAddress, "data": self.parsedData}))
+        # loop.run_until_complete(task)
         self.data = ""
 
-    async def updateData(self, data):
+    def updateData(self, data):
         print("upd data", data)
-        # await self.socketIO.emit("WORKER:DEVICE_DATA_RECIEVE", data)
+        self.socketIO.emit("WORKER:DEVICE_DATA_RECIEVE", data)
 
 
 class BtWorker():
@@ -233,7 +226,7 @@ class BtWorker():
                     self.connectSaved()
 
             except Exception as e:
-                print(str(e))
+                # print(str(e))
                 try:
                     self.mltDevice.disconnect()
                 except:
@@ -242,15 +235,19 @@ class BtWorker():
                     self.mltDevice = None
                     self.runIsOnce = False
                     return
-                print(str(e))
+                print("err", str(e))
                 print("Device disconnected")
                 self.device.setStatus(False, "Отключено")
+                self.socketIO.emit("WORKER:DEVICE_DISCONNECTED", {
+                                   "address": self.device.bleAddress})
                 break
         if self.needClose:
             print("Device disconnected")
             self.device.setStatus(False, "Отключено")
             self.needClose = False
             self.mltDevice.disconnect()
+            self.socketIO.emit("WORKER:DEVICE_DISCONNECTED", {
+                "address": self.device.bleAddress})
 
 
 if __name__ == '__main__':
