@@ -231,12 +231,12 @@ namespace QuickBlueToothLE
         {
             DeviceInformationCollection pairedBTDevices = await DeviceInformation.FindAllAsync(BluetoothLEDevice.GetDeviceSelectorFromPairingState(true));
             DeviceInformationCollection connectedBTDevices = await DeviceInformation.FindAllAsync(BluetoothLEDevice.GetDeviceSelectorFromConnectionStatus(BluetoothConnectionStatus.Connected));
-            Console.WriteLine("Отключение от всех устройств... " +  JsonSerializer.Serialize(connectedBTDevices.Count) + " " + JsonSerializer.Serialize(pairedBTDevices.Count));
+            Console.WriteLine("Отключение от всех устройств... " +  JsonSerializer.Serialize(connectedBTDevices) + " " + JsonSerializer.Serialize(pairedBTDevices) + " подключенные: " + JsonSerializer.Serialize(connectedDevices));
             foreach (var device in connectedBTDevices)
             {
                 try
                 {
-                        await device.Pairing.UnpairAsync();
+                    await device.Pairing.UnpairAsync();
                 }
                 catch (Exception ex)
                 {
@@ -248,13 +248,15 @@ namespace QuickBlueToothLE
             {
                 try
                 {
-                        await device.Pairing.UnpairAsync();
+                    await device.Pairing.UnpairAsync();
                 }
                 catch (Exception ex)
                 {
                     Console.WriteLine("Error unpair device " + ex.ToString() + device.Id);
                 };
             }
+
+            Console.WriteLine("Устройства отключены");
 
             /*  //await socketIOClient.EmitAsync("RESTART_BT");
               *//*socketIOClient.On("RESTARTED_BT", async (payload) =>
