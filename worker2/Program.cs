@@ -367,7 +367,7 @@ namespace QuickBlueToothLE
                     {
                         string deviceDisconnectedJson = JsonSerializer.Serialize(new DeviceConnectedPayload { address = address });
                         await socketIOClient.EmitAsync("WORKER:DEVICE_DISCONNECTED", deviceDisconnectedJson);
-                        await DisconnectAllDevicesFromPaired();
+                        await DisconnectDeviceFromPaired(address);
                         connectedDevices = connectedDevices.Where(dev => dev.address != address).ToList();
                     }
 
