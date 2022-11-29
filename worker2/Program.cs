@@ -231,7 +231,7 @@ namespace QuickBlueToothLE
         {
             DeviceInformationCollection pairedBTDevices = await DeviceInformation.FindAllAsync(BluetoothLEDevice.GetDeviceSelectorFromPairingState(true));
             DeviceInformationCollection connectedBTDevices = await DeviceInformation.FindAllAsync(BluetoothLEDevice.GetDeviceSelectorFromConnectionStatus(BluetoothConnectionStatus.Connected));
-            Console.WriteLine("Отключение от всех устройств... " +  JsonSerializer.Serialize(connectedBTDevices) + " " + JsonSerializer.Serialize(pairedBTDevices) + " подключенные: " + JsonSerializer.Serialize(connectedDevices));
+            Console.WriteLine("Отключение от всех устройстdddв... " +  JsonSerializer.Serialize(connectedBTDevices) + " " + JsonSerializer.Serialize(pairedBTDevices) + " подключенные: " + JsonSerializer.Serialize(connectedDevices));
             foreach (var device in connectedBTDevices)
             {
                 try
