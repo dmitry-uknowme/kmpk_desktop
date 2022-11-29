@@ -29,6 +29,10 @@ try {
 
   let sessionNumber;
 
+  if (!fs.existsSync("../data")) {
+    fs.mkdirSync("../data");
+  }
+
   try {
     const dateFolder = `../data/${dateDirName}`;
     if (!fs.existsSync(dateFolder)) {
@@ -44,7 +48,8 @@ try {
     workerScript = nodeChildProcess.spawn("cmd.exe", [
       "/c",
       "start",
-      "C:\\app\\kmpk_desktop1\\worker2\\bin\\Release\\BluetoothWorker.exe",
+      // "C:\\app\\kmpk_desktop\\worker2\\bin\\Debug\\BluetoothWorker.exe",
+      "C:\\app\\kmpk_desktop\\worker2\\bin\\Release\\BluetoothWorker.exe",
     ]);
 
     console.log("[worker] PID: " + workerScript.pid);
@@ -81,7 +86,7 @@ try {
     });
   } catch (ex) {}
 
-  const APP_DIR = "C:\\app\\kmpk_desktop1";
+  const APP_DIR = "C:\\app\\kmpk_desktop";
   // const APP_DIR = "/home/dmitry/projects/kmpk_desktop";
 
   let devices = JSON.parse(
@@ -171,7 +176,7 @@ try {
     socket.on("RESTART_BT", (payload) => {
       const restartBluetooth = nodeChildProcess.spawn("cmd.exe", [
         "/c",
-        "C:\\app\\kmpk_desktop1\\scripts\\btOff.bat",
+        "C:\\app\\kmpk_desktop\\scripts\\btOff.bat",
       ]);
 
       restartBluetooth.stdout.on("data", (data) => {
@@ -182,7 +187,7 @@ try {
         setTimeout(() => {
           const restartBluetooth = nodeChildProcess.spawn("cmd.exe", [
             "/c",
-            "C:\\app\\kmpk_desktop1\\scripts\\btOn.bat",
+            "C:\\app\\kmpk_desktop\\scripts\\btOn.bat",
           ]);
           restartBluetooth.stdout.on("data", (data) => {
             console.log("[restart_bt] stdout: " + data);

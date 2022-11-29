@@ -125,7 +125,7 @@ async function createWindow() {
 const runServer = () => {
   serverScript = nodeChildProcess.spawn("cmd.exe", [
     "/c",
-    `npx kill-port 8081 && cd C:\\app\\kmpk_desktop1\\server && npm run dev`,
+    `npx kill-port 8081 && cd C:\\app\\kmpk_desktop\\server && npm run dev`,
   ]);
 
   console.log("[server] PID: " + serverScript.pid);
@@ -155,7 +155,8 @@ app
       workerScript = nodeChildProcess.spawn("cmd.exe", [
         "/c",
         "start",
-        "C:\\app\\kmpk_desktop1\\worker2\\bin\\Release\\BluetoothWorker.exe",
+        // "C:\\app\\kmpk_desktop\\worker2\\bin\\Debug\\BluetoothWorker.exe",
+        "C:\\app\\kmpk_desktop\\worker2\\bin\\Release\\BluetoothWorker.exe",
       ]);
 
       console.log("[worker] PID: " + workerScript.pid);

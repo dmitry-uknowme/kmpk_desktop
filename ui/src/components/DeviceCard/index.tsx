@@ -72,16 +72,16 @@ const DeviceCard: React.FC<IDevice> = ({
   }, []);
 
   const tryConnectDevice = () => {
-    devicesList.map((device) => {
-      socket.emit("UI:DEVICE_TRY_CONNECT", { address: address });
-      setDevicesList((state) => [
-        ...state.filter((d) => d.address !== device.address),
-        {
-          ...state.find((d) => d.address === device.address),
-          isWaiting: true,
-        },
-      ]);
-    });
+    // devicesList.map((device) => {
+    socket.emit("UI:DEVICE_TRY_CONNECT", { address: address });
+    setDevicesList((state) => [
+      ...state.filter((d) => d.address !== address),
+      {
+        ...state.find((d) => d.address === address),
+        isWaiting: true,
+      },
+    ]);
+    // });
   };
 
   // const tryConnectDevice = () => {
