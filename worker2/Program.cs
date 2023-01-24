@@ -18,6 +18,7 @@ using System.Net;
 using Windows.Devices.Radios;
 using System.IO;
 using System.Collections.ObjectModel;
+using Windows.Foundation;
 //using System.Management.Automation.Powershell;
 
 namespace QuickBlueToothLE
@@ -229,34 +230,75 @@ namespace QuickBlueToothLE
 
         private static async Task DisconnectAllDevicesFromPaired()
         {
+
+            //IAsyncEnumerable<DeviceInformation> connectedBTDevices = DeviceInformation.FindAllAsync(BluetoothLEDevice.GetDeviceSelectorFromConnectionStatus(BluetoothConnectionStatus.Connected)).GetResults().ToAsyncEnumerable();
+            //IAsyncEnumerable<DeviceInformation> pairedBTDevices = DeviceInformation.FindAllAsync(BluetoothLEDevice.GetDeviceSelectorFromPairingState(true)).GetResults().ToAsyncEnumerable();
+
             DeviceInformationCollection pairedBTDevices = await DeviceInformation.FindAllAsync(BluetoothLEDevice.GetDeviceSelectorFromPairingState(true));
             DeviceInformationCollection connectedBTDevices = await DeviceInformation.FindAllAsync(BluetoothLEDevice.GetDeviceSelectorFromConnectionStatus(BluetoothConnectionStatus.Connected));
-            Console.WriteLine("Отключение от всех устройстdddв... " +  JsonSerializer.Serialize(connectedBTDevices) + " " + JsonSerializer.Serialize(pairedBTDevices) + " подключенные: " + JsonSerializer.Serialize(connectedDevices));
-            foreach (var device in connectedBTDevices)
-            {
-                try
-                {
-                    await device.Pairing.UnpairAsync();
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine("Error unpair device " + ex.ToString() + device.Id);
-                };
-            }
+            var options = new ParallelOptions { MaxDegreeOfParallelism = 5 };
 
-            foreach (var device in pairedBTDevices)
+            Console.WriteLine("Отключение от всех устройств... " + JsonSerializer.Serialize(connectedBTDevices) + " " + JsonSerializer.Serialize(pairedBTDevices));
+            var tasks = new List<Task>();
+            tasks.Add(Task.Run(() =>
             {
-                try
+                Parallel.ForEach(pairedBTDevices, options, async device =>
                 {
                     await device.Pairing.UnpairAsync();
-                }
-                catch (Exception ex)
+                });
+            }));
+
+            tasks.Add(Task.Run(() =>
+            {
+                Parallel.ForEach(connectedBTDevices, options, async device =>
                 {
-                    Console.WriteLine("Error unpair device " + ex.ToString() + device.Id);
-                };
-            }
+                    await device.Pairing.UnpairAsync();
+                });
+            }));
+
+
+            await Task.WhenAll(tasks);
+
 
             Console.WriteLine("Устройства отключены");
+
+            
+
+         /*   await Task.Run(() =>
+            {
+                Parallel.ForEach(connectedBTDevices, options, async device =>
+                {
+                    await device.Pairing.UnpairAsync();
+                });
+            });*/
+            //pairedBTDevices.ForEachAsyncC
+
+            /* await foreach (var device in connectedBTDevices)
+             {
+                 try
+                 {
+                     await device.Pairing.UnpairAsync();
+                 }
+                 catch (Exception ex)
+                 {
+                     Console.WriteLine("Error unpair device " + ex.ToString() + device.Id);
+                 };
+             }
+
+             await foreach (var device in pairedBTDevices)
+             {
+                 try
+                 {
+                     await device.Pairing.UnpairAsync();
+                 }
+                 catch (Exception ex)
+                 {
+                     Console.WriteLine("Error unpair device " + ex.ToString() + device.Id);
+                 };
+             }*/
+
+
+
 
             /*  //await socketIOClient.EmitAsync("RESTART_BT");
               *//*socketIOClient.On("RESTARTED_BT", async (payload) =>

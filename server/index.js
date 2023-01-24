@@ -48,8 +48,8 @@ try {
     workerScript = nodeChildProcess.spawn("cmd.exe", [
       "/c",
       "start",
-      // "C:\\app\\kmpk_desktop\\worker2\\bin\\Debug\\BluetoothWorker.exe",
-      "C:\\app\\kmpk_desktop\\worker2\\bin\\Release\\BluetoothWorker.exe",
+      "C:\\app\\kmpk_desktop\\worker2\\bin\\Debug\\BluetoothWorker.exe",
+      // "C:\\app\\kmpk_desktop\\worker2\\bin\\Release\\BluetoothWorker.exe",
     ]);
 
     console.log("[worker] PID: " + workerScript.pid);
@@ -108,7 +108,7 @@ try {
         delete workers[socket.id];
         console.log("restarting worker", workers);
         if (Object.keys(workers) <= 1) {
-          runWorker();
+          // runWorker();
           devices.map((device) => {
             socket.broadcast.emit("UI:DEVICE_DISCONNECTED", {
               address: device.address,
